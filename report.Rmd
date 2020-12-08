@@ -37,10 +37,22 @@ dates <- strptime(c(chicago_year$DATE..OF.OCCURRENCE), format="%m/%d/%Y %H:%M:%S
 
 #vadi listu sati
 hours <- as.numeric(format(strptime(chicago_year$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
+table(hours)
 ```
 
 ## Podaci o učestalosti kriminala ovisno o dobu dana
 
 ```{r}
-hist(hours, breaks = 0:24, main="Učestalost kriminala ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija")
+hist(hours + 1, breaks = 0:24, main="Učestalost kriminala ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija", col="light blue", xaxt='n')
+axis(side=1, at=seq(0,24), labels=seq(0,24))
+```
+
+## Usporedba učestalosti krađa s učestalosti kriminala vezanih uz narkotike
+
+```{r}
+```
+
+## Veze između socio-ekonomskih faktora i kategorije kriminala
+
+```{r}
 ```
