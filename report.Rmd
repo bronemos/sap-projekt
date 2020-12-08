@@ -18,6 +18,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ```{r echo=T, error=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
+library(ggplot2)
 ```
 
 ## Učitavanje podataka
@@ -44,6 +45,24 @@ table(hours)
 
 ```{r}
 hist(hours + 1, breaks = 0:24, main="Učestalost kriminala ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija", col="light blue", xaxt='n')
+axis(side=1, at=seq(0,24,2), tick=T)
+rug(seq(1,23,2), ticksize = -0.03, side=1)
+```
+```{r}
+categories <- unique(chicago_year$PRIMARY.DESCRIPTION)
+cat("Kategorije kriminalnih radnji\n")
+categories
+help(barplot)
+
+theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT",]
+theft_hours <- as.numeric(format(strptime(theft$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
+hist(theft_hours + 1, breaks = 0:24, main="Učestalost krađa ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija", col="light blue", xaxt='n')
+axis(side=1, at=seq(0,24,2), tick=T)
+rug(seq(1,23,2), ticksize = -0.03, side=1)
+
+homicide <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "HOMICIDE",]
+homicide_hours <- as.numeric(format(strptime(homicide$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
+hist(homicide_hours + 1, breaks = 0:24, main="Učestalost ubojstva ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija", col="light blue", xaxt='n')
 axis(side=1, at=seq(0,24,2), tick=T)
 rug(seq(1,23,2), ticksize = -0.03, side=1)
 ```
