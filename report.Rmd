@@ -14,18 +14,19 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Uvod
 
+Cilj ovog projekta je analizirati podatke o kriminalu na području Chicaga bilježene u periodu od godinu dana.
+
 ## Učitavanje paketa
 
 ```{r echo=T, error=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
-library(ggplot2)
 ```
 
 ## Učitavanje podataka
 
 ```{r}
-chicago_year = read.csv('data/Crimes_-_One_year_prior_to_present.csv')
-chicago_pc = read.csv('data/Chicago_poverty_and_crime.csv')
+chicago_year = read.csv("data/Crimes_-_One_year_prior_to_present.csv")
+chicago_pc = read.csv("data/Chicago_poverty_and_crime.csv")
 dim(chicago_pc)
 dim(chicago_year)
 ```
@@ -34,45 +35,106 @@ dim(chicago_year)
 
 ```{r}
 #vadi listu datuma
-dates <- strptime(c(chicago_year$DATE..OF.OCCURRENCE), format="%m/%d/%Y %H:%M:%S %p", tz="America/Chicago")
+dates <-
+  strptime(c(chicago_year$DATE..OF.OCCURRENCE),
+           format = "%m/%d/%Y %H:%M:%S %p",
+           tz = "America/Chicago")
 
 #vadi listu sati
-hours <- as.numeric(format(strptime(chicago_year$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
+hours <-
+  as.numeric(format(
+    strptime(
+      chicago_year$DATE..OF.OCCURRENCE,
+      format = "%m/%d/%Y %I:%M:%S %p",
+      tz = "America/Chicago"
+    ),
+    format = "%H"
+  ))
 table(hours)
 ```
 
 ## Podaci o učestalosti kriminala ovisno o dobu dana
 
 ```{r}
-hist(hours + 1, breaks = 0:24, main="Učestalost kriminala ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija", col="light blue", xaxt='n')
-axis(side=1, at=seq(0,24,2), tick=T)
-rug(seq(1,23,2), ticksize = -0.03, side=1)
+hist(
+  hours + 1,
+  breaks = 0:24,
+  main = "Učestalost kriminala ovisno o dobu dana",
+  xlab = "Sat u danu",
+  ylab = "Frekvencija",
+  col = "light blue",
+  xaxt = "n"
+)
+axis(side = 1,
+     at = seq(0, 24, 2),
+     tick = T)
+rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
 ```
+
 ```{r}
 categories <- unique(chicago_year$PRIMARY.DESCRIPTION)
 cat("Kategorije kriminalnih radnji\n")
 categories
-help(barplot)
+length(categories)
 
-theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT",]
-theft_hours <- as.numeric(format(strptime(theft$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
-hist(theft_hours + 1, breaks = 0:24, main="Učestalost krađa ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija", col="light blue", xaxt='n')
-axis(side=1, at=seq(0,24,2), tick=T)
-rug(seq(1,23,2), ticksize = -0.03, side=1)
+theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT", ]
+theft_hours <-
+  scale(table(as.numeric(format(
+    strptime(theft$DATE..OF.OCCURRENCE, format = "%m/%d/%Y %I:%M:%S %p", tz =
+               "America/Chicago"),
+    format = "%H"
+  ))))
 
-homicide <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "HOMICIDE",]
-homicide_hours <- as.numeric(format(strptime(homicide$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
-hist(homicide_hours + 1, breaks = 0:24, main="Učestalost ubojstva ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija", col="light blue", xaxt='n')
-axis(side=1, at=seq(0,24,2), tick=T)
-rug(seq(1,23,2), ticksize = -0.03, side=1)
+
+homicide <-
+  chicago_year[chicago_year$PRIMARY.DESCRIPTION == "HOMICIDE", ]
+homicide_hours <-
+  scale(table(as.numeric(format(
+    strptime(
+      homicide$DATE..OF.OCCURRENCE,
+      format = "%m/%d/%Y %I:%M:%S %p",
+      tz = "America/Chicago"
+    ),
+    format = "%H"
+  ))))
+
+plot(
+  homicide_hours,
+  type = "l",
+  main = "Relativan odnos učestalosti ubojstava i krađa tokom dana",
+  xlab = "Sat u danu",
+  ylab = "Učestalost",
+  xaxt = "n",
+  yaxt = "n"
+)
+lines(theft_hours, col = "red")
+lines(homicide_hours, col = "blue")
+axis(side = 1,
+     at = seq(0, 24, 2),
+     tick = T)
+rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
+legend("topright", c("Krađe", "Ubojstva"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
+
+
 ```
-
+## Odnos količine ubojstava i BDP per Capita
+```{r}
+homicide_gdp <-
+  data.frame(x = chicago_pc$Per.Capita.Income,
+             y = chicago_pc$Assault..Homicide.)
+plot(homicide_gdp,
+     main = "Ovisnost stope ubojstava u ovisnosti o BDP per capita",
+     xlab = "BDP per capita",
+     ylab = "Stopa ubojstava na 100 000")
+```
 ## Usporedba učestalosti krađa s učestalosti kriminala vezanih uz narkotike
 
 ```{r}
+
 ```
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
 
 ```{r}
+
 ```
