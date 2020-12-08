@@ -36,12 +36,11 @@ dim(chicago_year)
 dates <- strptime(c(chicago_year$DATE..OF.OCCURRENCE), format="%m/%d/%Y %H:%M:%S %p", tz="America/Chicago")
 
 #vadi listu sati
-hours <- as.integer(format(strptime(chicago_year$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
+hours <- as.numeric(format(strptime(chicago_year$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
 ```
 
 ## Podaci o učestalosti kriminala ovisno o dobu dana
 
 ```{r}
-#ne radi popraviti
-hist(hours, breaks = range(0,23), main="Učestalost kriminala ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija")
+hist(hours, breaks = 0:24, main="Učestalost kriminala ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija")
 ```
