@@ -1,11 +1,13 @@
 ---
 title: "Analiza kriminala i socio-ekonomskih faktora"
 author:
-- "Jan Grgić"
-- "Bernard Spiegl"
-- "Korina Šimičević"
-- "Dunja Šmigovec"
-output: pdf_document
+- Jan Grgić
+- Bernard Spiegl
+- Korina Šimičević
+- Dunja Šmigovec
+output:
+  pdf_document: default
+  word_document: default
 ---
 
 ```{r setup, include=FALSE}
@@ -130,6 +132,44 @@ plot(homicide_gdp,
 ## Odnos stope krađa i BDP per capita
 ```{r}
 ```
+
+## Prikaz frekvencija različitih tipova zločina unazad godinu dana
+```{r}
+table <- table(chicago_year$PRIMARY.DESCRIPTION)
+data <- as.data.frame.table(table)
+
+
+df <- data[order(data$Freq, decreasing = TRUE),]
+op <- par(mar = c(12, 4, 1, 2))
+barplot(
+  df$Freq,
+  names.arg = df$Var1,
+  las = 2,
+  cex.names = 0.6,
+  col = "skyblue",
+  ylim = range(pretty(c(0, df$Freq))),
+  main = "Frekvencije različitih tipova zločina"
+)
+
+```
+
+## Prikaz tipova zločina koji su se pojavili manje od 2000 puta unazad godinu dana
+```{r}
+dfs <- df[df$Freq < 2000, ]
+op <- par(mar = c(13, 4, 1, 2))
+barplot(
+  dfs$Freq,
+  names.arg = dfs$Var1,
+  las = 2,
+  cex.names = 0.7,
+  col = "skyblue",
+  ylim = range(pretty(c(0, 2000)))
+)
+
+
+```
+
+
 ## Usporedba učestalosti krađa s učestalosti kriminala vezanih uz narkotike
 
 ```{r}
