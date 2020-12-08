@@ -1,5 +1,10 @@
 ---
 title: "Analiza kriminala i socio-ekonomskih faktora"
+author:
+- "Jan Grgić"
+- "Bernard Spiegl"
+- "Korina Šimičević"
+- "Dunja Šmigovec"
 output: pdf_document
 ---
 
@@ -7,22 +12,36 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## R Markdown
+## Uvod
 
-This is an R Markdown document. Markdown is a simple formatting syntax for authoring HTML, PDF, and MS Word documents. For more details on using R Markdown see <http://rmarkdown.rstudio.com>.
+## Učitavanje paketa
 
-When you click the **Knit** button a document will be generated that includes both content as well as the output of any embedded R code chunks within the document. You can embed an R code chunk like this:
-
-```{r cars}
-summary(cars)
+```{r echo=T, error=FALSE, warning=FALSE, message=FALSE}
+library(dplyr)
 ```
 
-## Including Plots
+## Učitavanje podataka
 
-You can also embed plots, for example:
-
-```{r pressure, echo=FALSE}
-plot(pressure)
+```{r}
+chicago_year = read.csv('data/Crimes_-_One_year_prior_to_present.csv')
+chicago_pc = read.csv('data/Chicago_poverty_and_crime.csv')
+dim(chicago_pc)
+dim(chicago_year)
 ```
 
-Note that the `echo = FALSE` parameter was added to the code chunk to prevent printing of the R code that generated the plot.
+## Učitavanje podataka o vremenu
+
+```{r}
+#vadi listu datuma
+dates <- strptime(c(chicago_year$DATE..OF.OCCURRENCE), format="%m/%d/%Y %H:%M:%S %p", tz="America/Chicago")
+
+#vadi listu sati
+hours <- as.integer(format(strptime(chicago_year$DATE..OF.OCCURRENCE, format="%m/%d/%Y %I:%M:%S %p", tz="America/Chicago"), format="%H"))
+```
+
+## Podaci o učestalosti kriminala ovisno o dobu dana
+
+```{r}
+#ne radi popraviti
+hist(hours, breaks = range(0,23), main="Učestalost kriminala ovisno o dobu dana", xlab="Sat u danu", ylab="Frekvencija")
+```
