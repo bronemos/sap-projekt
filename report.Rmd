@@ -110,22 +110,25 @@ plot(
 lines(theft_hours, col = "red")
 lines(homicide_hours, col = "blue")
 axis(side = 1,
-     at = seq(0, 24, 2),
+     at = seq(1, 23, 2),
      tick = T)
-rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
+rug(seq(0, 24, 2), ticksize = -0.03, side = 1)
 legend("topright", c("Krađe", "Ubojstva"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
 
 
 ```
-## Odnos količine ubojstava i BDP per Capita
+## Odnos stope ubojstava i BDP per Capita
 ```{r}
 homicide_gdp <-
   data.frame(x = chicago_pc$Per.Capita.Income,
              y = chicago_pc$Assault..Homicide.)
 plot(homicide_gdp,
-     main = "Ovisnost stope ubojstava u ovisnosti o BDP per capita",
-     xlab = "BDP per capita",
-     ylab = "Stopa ubojstava na 100 000")
+     main = "Stopa ubojstava u ovisnosti o BDP per capita",
+     xlab = "BDP per capita (US$)",
+     ylab = "Stopa ubojstava (/100 000)")
+```
+## Odnos stope krađa i BDP per capita
+```{r}
 ```
 ## Usporedba učestalosti krađa s učestalosti kriminala vezanih uz narkotike
 
