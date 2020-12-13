@@ -260,7 +260,39 @@ cor.test(chicago_pc$No.High.School.Diploma, chicago_pc$Crowded.Housing)
 ```
 ... vidimo da je 95%-tni interval između 0.85 i 0.93. Zaključujemo da su ove dvije varijable zaista jako zavisne. Iz tog razloga, možemo zaključiti da manjak obrazovanja najviše pridonosi prenatrpanim domovima. Vidjeli smo prije da su varijable No.High.School.Diploma i Per.Capita.Income dosta jako negativno korelirane (-0.70), međutim postavlja se pitanje zašto onda Per.Capita.Income i Crowded.Housing nisu jače korelirane?
 
+Ovo je dobar primjer da probamo napraviti linearnu regresiju i pogledamo kako to sve izgleda. 
 
+```{r}
+x <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
+y <- as.matrix(chicago_pc[6]) #Crowded.Housing
+
+reg1 <- lm(y ~ x, chicago_pc)
+
+summary(reg1)
+
+```
+```{r}
+plot(
+  x,
+  y,
+  pch = 16,
+  cex = 1.3,
+  col = "lightgreen",
+  xlab = "Percentage of people without high school diploma",
+  ylab = "Percentage of people living in crowded houses",
+)
+abline(lm(y ~ x), col = "pink", lwd = 2)
+```
+Probat ćemo dodati i Per.Capita.Income u ovu priču i pogledati kako se model ponaša u toj situaciji.
+
+```{r}
+x1 <- as.matrix(chicago_pc[9]) #Per.Capita.Income
+
+reg2 <- lm(y ~ x + x1, chicago_pc)
+
+summary(reg2)
+```
+Vidimo da smo dobili nešto bolji model. Smanjili smo std. error svih koeficijenata, povećali smo značajnost koeficijenta b0 i povećali smo koeficijent determinacije.
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
 
