@@ -7,6 +7,9 @@ author:
 - Dunja Šmigovec
 output:
   pdf_document: default
+header-includes:
+  \usepackage{float}
+  \floatplacement{figure}{H}
 ---
 
 ```{r setup, include=FALSE}
@@ -170,7 +173,7 @@ legend("bottomright", c("Theft", "Homicide"), fill = c(rgb(1, 0, 0, 0.5), rgb(0,
 
 ```
 ## Odnos stope ubojstava i BDP per Capita
-Promatranjem odnosa stope ubojstava i BDP per Capita (Figure \ref{fig:homicide_gdp})uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
+Promatranjem odnosa stope ubojstava i BDP per Capita (Figure \ref{fig:homicide_gdp}) uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
 Jedan od razloga takvog trenda može biti raslojenost populacije po kvartovima, pa tako bogatiji dio populacije živi u sigurnijim kvartovima sa manje kriminala.
 ```{r homicide_gdp, fig.cap = "Odnos stope ubojstava i BDP per Capita", out.width='0.9\\linewidth'}
 homicide_gdp <-
