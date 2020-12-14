@@ -56,10 +56,10 @@ table(hours)
 
 ## Podaci o učestalosti kriminala ovisno o dobu dana
 
-Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (sat po sat).\
+Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (Figure \ref{fig:frequency_hist}).\
 Inicijalna pretpostavka većine je vjerojatno da su kriminalne aktivnosti najfrekventnije u noćnim satima, ali histogram nam pokazuje drukčije.
 
-```{r fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata"}
+```{r frequency_hist, fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata", out.width='0.9\\linewidth'}
 hist(
   hours + 1,
   breaks = 0:24,
@@ -85,8 +85,8 @@ length(categories)
 
 ## Prikaz frekvencija različitih kategorija zločina unazad godinu dana
 
-U nastavku možemo vidjeti da je su najčešći lakši oblici zločina što je bilo i za očekivati.
-```{r}
+U nastavku (Figure \ref{fig:category_frequencies}) možemo vidjeti da je su najčešći lakši oblici zločina što je bilo i za očekivati.
+```{r category_frequencies, fig.cap = "Frekventnost kategorija unazad godinu dana", out.width='0.9\\linewidth'}
 table <- table(chicago_year$PRIMARY.DESCRIPTION)
 data <- as.data.frame.table(table)
 
@@ -107,8 +107,8 @@ barplot(
 
 ## Prikaz kategorija zločina koji su se pojavili manje od 2000 puta unazad godinu dana
 
-Promotrimo li kategorije zločina koje s frekvencijama manjim od 2000 uočavamo možemo vidjeti međusoban odnos frekventnosti težih kriminalnih radnji.
-```{r}
+Promotrimo li kategorije zločina koje s frekvencijama manjim od 2000 (Figure \ref{fig:sub_2000}) uočavamo možemo vidjeti međusoban odnos frekventnosti težih kriminalnih radnji.
+```{r sub_2000, fig.cap = "Kategorije kriminala s frekvencijom <2000", out.width='0.9\\linewidth'}
 dfs <- df[df$Freq < 2000, ]
 op <- par(mar = c(13, 4, 1, 2))
 barplot(
@@ -126,10 +126,10 @@ barplot(
 
 ## Prikaz relativnog odnosa količine ubojstava i krađa u periodu od 24 sata
 
-U nastavku možemo vidjeti graf koji prikazuje relativan odnos frekventnosti krađa i ubojstava u periodu od 24 sata.\
+U nastavku možemo vidjeti graf koji prikazuje relativan odnos frekventnosti krađa i ubojstava u periodu od 24 sata (Figure \ref{fig:homicide_theft}).\
 S obzirom da su podaci skalirani radi se isključivo o relativnom prikazu.\
 Uočljivo je da se ubojstva češće događaju u kasnijim satima i tokom noći dok su krađe češće sredinom dana.
-```{r warning=FALSE}
+```{r homicide_theft, warning=FALSE, fig.cap = "Prikaz relativnog odnosa količine ubojstava i krađa u periodu od 24 sata", out.width='0.9\\linewidth'}
 theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT",]
 theft_hours <-
   scale(table(as.numeric(format(
@@ -170,9 +170,9 @@ legend("bottomright", c("Theft", "Homicide"), fill = c(rgb(1, 0, 0, 0.5), rgb(0,
 
 ```
 ## Odnos stope ubojstava i BDP per Capita
-Promatranjem odnosa stope ubojstava i BDP per Capita uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
+Promatranjem odnosa stope ubojstava i BDP per Capita (Figure \ref{fig:homicide_gdp})uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
 Jedan od razloga takvog trenda može biti raslojenost populacije po kvartovima, pa tako bogatiji dio populacije živi u sigurnijim kvartovima sa manje kriminala.
-```{r}
+```{r homicide_gdp, fig.cap = "Odnos stope ubojstava i BDP per Capita", out.width='0.9\\linewidth'}
 homicide_gdp <-
   data.frame(x = chicago_pc$Per.Capita.Income,
              y = chicago_pc$Assault..Homicide.)
@@ -277,7 +277,7 @@ cor.test(chicago_pc$No.High.School.Diploma, chicago_pc$Crowded.Housing)
 ```
 ... vidimo da je 95%-tni interval između 0.85 i 0.93. Zaključujemo da su ove dvije varijable zaista jako zavisne. Iz tog razloga, možemo zaključiti da manjak obrazovanja najviše pridonosi prenatrpanim domovima. Vidjeli smo prije da su varijable No.High.School.Diploma i Per.Capita.Income dosta jako negativno korelirane (-0.70), međutim postavlja se pitanje zašto onda Per.Capita.Income i Crowded.Housing nisu jače korelirane?
 
-Ovo je dobar primjer da probamo napraviti linearnu regresiju i pogledamo kako to sve izgleda. 
+Ovo je dobar primjer da probamo napraviti linearnu regresiju i pogledamo kako to sve izgleda (Figure \ref{fig:regression}).
 
 ```{r}
 x <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
@@ -288,7 +288,7 @@ reg1 <- lm(y ~ x, chicago_pc)
 summary(reg1)
 
 ```
-```{r}
+```{r regression, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
 plot(
   x,
   y,
