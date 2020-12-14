@@ -15,7 +15,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ## Uvod
 
-Cilj ovog projekta je analizirati podatke o kriminalu na području Chicaga bilježene u periodu od godinu dana.
+Cilj ovog projekta je analizirati i vizualno prikazati podatke o kriminalu na području Chicaga bilježene u periodu od godinu dana.
 
 ## Učitavanje paketa
 
@@ -35,13 +35,13 @@ dim(chicago_year)
 ## Učitavanje podataka o vremenu
 
 ```{r}
-#vadi listu datuma
+#dohvaća listu datuma
 dates <-
   strptime(c(chicago_year$DATE..OF.OCCURRENCE),
            format = "%m/%d/%Y %H:%M:%S %p",
            tz = "America/Chicago")
 
-#vadi listu sati
+#dohvaća listu sati
 hours <-
   as.numeric(format(
     strptime(
@@ -56,13 +56,16 @@ table(hours)
 
 ## Podaci o učestalosti kriminala ovisno o dobu dana
 
-```{r}
+Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (sat po sat).\
+Inicijalna pretpostavka većine je vjerojatno da su kriminalne aktivnosti najfrekventnije u noćnim satima, ali histogram nam pokazuje drukčije.
+
+```{r fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata"}
 hist(
   hours + 1,
   breaks = 0:24,
-  main = "Učestalost kriminala ovisno o dobu dana",
-  xlab = "Sat u danu",
-  ylab = "Frekvencija",
+  main = "Frequency of criminal activities in 24 hours",
+  xlab = "Hour",
+  ylab = "Frequency",
   col = "light blue",
   xaxt = "n"
 )
@@ -71,68 +74,18 @@ axis(side = 1,
      tick = T)
 rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
 ```
+Razlog ovakvog izgleda histograma je činjenica da sve kriminalne radnje promatramo zajedno, kasnije ćemo vidjeti da uzimanjem određenog tipa kriminala dolazimo do drukčijeg izgleda aktivnosti tokom dana.\
 
+## Kategorije kriminala u datasetu
 ```{r}
 categories <- unique(chicago_year$PRIMARY.DESCRIPTION)
-cat("Kategorije kriminalnih radnji\n")
 categories
 length(categories)
-
-theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT", ]
-theft_hours <-
-  scale(table(as.numeric(format(
-    strptime(theft$DATE..OF.OCCURRENCE, format = "%m/%d/%Y %I:%M:%S %p", tz =
-               "America/Chicago"),
-    format = "%H"
-  ))))
-
-
-homicide <-
-  chicago_year[chicago_year$PRIMARY.DESCRIPTION == "HOMICIDE", ]
-homicide_hours <-
-  scale(table(as.numeric(format(
-    strptime(
-      homicide$DATE..OF.OCCURRENCE,
-      format = "%m/%d/%Y %I:%M:%S %p",
-      tz = "America/Chicago"
-    ),
-    format = "%H"
-  ))))
-
-plot(
-  homicide_hours,
-  type = "l",
-  main = "Relativan odnos učestalosti ubojstava i krađa tokom dana",
-  xlab = "Sat u danu",
-  ylab = "Učestalost",
-  xaxt = "n",
-  yaxt = "n"
-)
-lines(theft_hours, col = "red")
-lines(homicide_hours, col = "blue")
-axis(side = 1,
-     at = seq(1, 23, 2),
-     tick = T)
-rug(seq(0, 24, 2), ticksize = -0.03, side = 1)
-legend("topright", c("Krađe", "Ubojstva"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
-
-
-```
-## Odnos stope ubojstava i BDP per Capita
-```{r}
-homicide_gdp <-
-  data.frame(x = chicago_pc$Per.Capita.Income,
-             y = chicago_pc$Assault..Homicide.)
-plot(homicide_gdp,
-     main = "Stopa ubojstava u ovisnosti o BDP per capita",
-     xlab = "BDP per capita (US$)",
-     ylab = "Stopa ubojstava (/100 000)")
-```
-## Odnos stope krađa i BDP per capita
-```{r}
 ```
 
-## Prikaz frekvencija različitih tipova zločina unazad godinu dana
+## Prikaz frekvencija različitih kategorija zločina unazad godinu dana
+
+U nastavku možemo vidjeti da je su najčešći lakši oblici zločina što je bilo i za očekivati.
 ```{r}
 table <- table(chicago_year$PRIMARY.DESCRIPTION)
 data <- as.data.frame.table(table)
@@ -147,12 +100,14 @@ barplot(
   cex.names = 0.6,
   col = "skyblue",
   ylim = range(pretty(c(0, df$Freq))),
-  main = "Frekvencije različitih tipova zločina"
+  main = "Frequency of different crime activities"
 )
 
 ```
 
-## Prikaz tipova zločina koji su se pojavili manje od 2000 puta unazad godinu dana
+## Prikaz kategorija zločina koji su se pojavili manje od 2000 puta unazad godinu dana
+
+Promotrimo li kategorije zločina koje s frekvencijama manjim od 2000 uočavamo možemo vidjeti međusoban odnos frekventnosti težih kriminalnih radnji.
 ```{r}
 dfs <- df[df$Freq < 2000, ]
 op <- par(mar = c(13, 4, 1, 2))
@@ -162,10 +117,72 @@ barplot(
   las = 2,
   cex.names = 0.7,
   col = "skyblue",
-  ylim = range(pretty(c(0, 2000)))
+  ylim = range(pretty(c(0, 2000))),
+  main = "Crimes with a frequency <2000"
 )
 
 
+```
+
+## Prikaz relativnog odnosa količine ubojstava i krađa u periodu od 24 sata
+
+U nastavku možemo vidjeti graf koji prikazuje relativan odnos frekventnosti krađa i ubojstava u periodu od 24 sata.\
+S obzirom da su podaci skalirani radi se isključivo o relativnom prikazu.\
+Uočljivo je da se ubojstva češće događaju u kasnijim satima i tokom noći dok su krađe češće sredinom dana.
+```{r warning=FALSE}
+theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT",]
+theft_hours <-
+  scale(table(as.numeric(format(
+    strptime(theft$DATE..OF.OCCURRENCE, format = "%m/%d/%Y %I:%M:%S %p", tz =
+               "America/Chicago"),
+    format = "%H"
+  ))))
+
+
+homicide <-
+  chicago_year[chicago_year$PRIMARY.DESCRIPTION == "HOMICIDE",]
+homicide_hours <-
+  scale(table(as.numeric(format(
+    strptime(
+      homicide$DATE..OF.OCCURRENCE,
+      format = "%m/%d/%Y %I:%M:%S %p",
+      tz = "America/Chicago"
+    ),
+    format = "%H"
+  ))))
+
+plot(
+  homicide_hours,
+  type = "l",
+  main = "Comparison of relative frequencies of homicide and theft in 24 hours",
+  xlab = "Hour",
+  ylab = "Frequency",
+  xaxt = "n",
+  yaxt = "n"
+)
+lines(theft_hours, col = "red")
+lines(homicide_hours, col = "blue")
+axis(side = 1,
+     at = seq(1, 23, 2),
+     tick = T)
+rug(seq(0, 24, 2), ticksize = -0.03, side = 1)
+legend("bottomright", c("Theft", "Homicide"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
+
+```
+## Odnos stope ubojstava i BDP per Capita
+Promatranjem odnosa stope ubojstava i BDP per Capita uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
+Jedan od razloga takvog trenda može biti raslojenost populacije po kvartovima, pa tako bogatiji dio populacije živi u sigurnijim kvartovima sa manje kriminala.
+```{r}
+homicide_gdp <-
+  data.frame(x = chicago_pc$Per.Capita.Income,
+             y = chicago_pc$Assault..Homicide.)
+plot(homicide_gdp,
+     main = "Homicide rate in relation to GDP per capita",
+     xlab = "GDP per capita (US$)",
+     ylab = "Homicide rate (n/100 000)")
+```
+## Odnos stope krađa i BDP per capita
+```{r}
 ```
 
 
