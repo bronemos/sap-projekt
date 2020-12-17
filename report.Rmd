@@ -210,7 +210,7 @@ narcotics_dates <-
 plot(
   theft_dates,
   type = "l",
-  main = "Comparison of rnumber of crimes related to theft and narcotics in a year",
+  main = "Comparison of number of crimes related to theft and narcotics in a year",
   xlab = "Date",
   ylab = "Number of crimes",
 )
