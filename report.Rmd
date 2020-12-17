@@ -188,7 +188,7 @@ plot(homicide_gdp,
 ## Odnos stope krađa i BDP per capita msm da je nespojivo, krade imamo samo u chicago_year, a tamo ne znamo BDP
 
 ## Usporedba učestalosti krađa s učestalosti kriminala vezanih uz narkotike
-Promatranjem kretanja broja krađa i kriminala povezanog s narkoticima (Figure \ref{fig:theft_vs_narcotics}) može se uočiti da se broj krađa i broj kriminalnih djela povezanih s narkoticima podjednako mijenjaju. Izgleda kao da brojka obje vrste kriminalnih djela istovremeno pada odnosno raste.
+Promatranjem kretanja broja krađa i kriminala povezanog s narkoticima (Figure \ref{fig:theft_vs_narcotics}) može se uočiti da se broj krađa i broj kriminalnih djela povezanih s narkoticima podjednako mijenjaju. Izgleda kao da brojka obje vrste kriminalnih djela istovremeno pada odnosno raste. To nam dokazuje i vrlo visoka korelacija (0.7119473)
 
 ```{r theft_vs_narcotics, fig.cap = "Odnos stope krađa i BDP per Capita", out.width='0.9\\linewidth'}
 
@@ -217,6 +217,8 @@ plot(
 lines(theft_dates, col = "red")
 lines(narcotics_dates, col = "blue")
 legend("bottomright", c("Theft", "Narcotics"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
+
+cor(theft_dates, narcotics_dates)
 
 ```
 
