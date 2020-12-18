@@ -190,7 +190,7 @@ plot(homicide_gdp,
 ## Usporedba učestalosti krađa s učestalosti kriminala vezanih uz narkotike
 Promatranjem kretanja broja krađa i kriminala povezanog s narkoticima (Figure \ref{fig:theft_vs_narcotics}) može se uočiti da se broj krađa i broj kriminalnih djela povezanih s narkoticima podjednako mijenjaju. Izgleda kao da brojka obje vrste kriminalnih djela istovremeno pada odnosno raste. To nam dokazuje i vrlo visoka korelacija (0.7119473)
 
-```{r theft_vs_narcotics, fig.cap = "Odnos stope krađa i BDP per Capita", out.width='0.9\\linewidth'}
+```{r theft_vs_narcotics, fig.cap = "Usporedba broja krađa i kriminala vezanog za narkotike u periodu od godinu dana", out.width='0.9\\linewidth'}
 
 theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT",]
 theft_dates <-
@@ -210,13 +210,13 @@ narcotics_dates <-
 plot(
   theft_dates,
   type = "l",
-  main = "Comparison of number of crimes related to theft and narcotics in a year",
+  main = "Comparison of number of crimes related to\ntheft and narcotics in a year",
   xlab = "Date",
   ylab = "Number of crimes",
 )
 lines(theft_dates, col = "red")
 lines(narcotics_dates, col = "blue")
-legend("bottomright", c("Theft", "Narcotics"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
+legend("topright", c("Theft", "Narcotics"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
 
 cor(theft_dates, narcotics_dates)
 
