@@ -224,47 +224,19 @@ cor(theft_dates, narcotics_dates)
 
 
 ## Zavisnosti različitih socio-ekonomskih faktora
-Prije nego što krenemo na veze između socio-ekonomskih faktora i kategorije kriminala, prvo nas zanima kakve su zavisnosti između različitih socio-ekonomskih faktora. U tu svrhu, ispitali smo nekoliko korelacijskih koeficijenata za varijable za koje smatramo da bi mogle biti povezane.
-
-Prva varijabla je Below.Poverty.Level za koji smatramo da bi trebala biti u korelaciji s varijablama Unemployment, No.High.School.Diploma, Crowded.Housing i Per.Capita.Income. 
+Prije nego što krenemo na veze između socio-ekonomskih faktora i kategorije kriminala, prvo nas zanima kakve su zavisnosti između različitih socio-ekonomskih faktora. U tu svrhu, napravili smo korelacijsku matricu.
 
 ```{r}
-cor(chicago_pc$Below.Poverty.Level, chicago_pc$Unemployment)
+library(corrplot)
+matrixData <- chicago_pc[, c(-1, -2, -3, -4)]
+matrix <- cor(matrixData)
+matrix
 ```
-```{r}
-cor(chicago_pc$Below.Poverty.Level, chicago_pc$No.High.School.Diploma)
-```
-```{r}
-cor(chicago_pc$Below.Poverty.Level, chicago_pc$Crowded.Housing)
-```
-```{r}
-cor(chicago_pc$Below.Poverty.Level, chicago_pc$Per.Capita.Income)
-```
-Najveću pozitivnu korelaciju smo dobili za par varijabli Below.Poverty.Level i Unemployment. Dosta dobru negativnu korelaciju dobili smo za par varijabli Below.Poverty.Level i Per.Capita.Income. Možemo zaključiti da je nezaposlenost veliki razlog zašto netko živi ispod granice siromaštva. Iz negativne korelacije između Below.Poverty.Level i Per.Capita.Income mogli bismo pretpostaviti da su kvartovi eventualno grupirani po socijalnom statusu te bogatiji kvartovi imaju manje siromašnih ljudi. Za varijable No.High.School.Diploma i Crowded.Housing dobivamo očekivanu pozitivnu korelaciju.
+Uzmimo na primjer varijablu Below.Poverty.Level i pogledajmo kako se ona ponaša.
+Najveću pozitivnu korelaciju smo dobili za par varijabli Below.Poverty.Level i Unemployment (0.76). Dosta dobru negativnu korelaciju dobili smo za par varijabli Below.Poverty.Level i Per.Capita.Income (-0.53). Možemo zaključiti da je nezaposlenost veliki razlog zašto netko živi ispod granice siromaštva. Iz negativne korelacije između Below.Poverty.Level i Per.Capita.Income mogli bismo pretpostaviti da su kvartovi eventualno grupirani po socijalnom statusu te bogatiji kvartovi imaju manje siromašnih ljudi.
 
+Za varijable Unemployment i Crowded.Housing dobivamo slabu pozitivinu korelaciju (0.14). Za te smo varijable očekivali pozitivnu korelaciju. Naime, ako netko nema posao onda vjerojatno nema ni dovoljno za stanarinu koja bi odgovarala veličini prostora koji je potreban za zdrav život. Međutim broj koji smo dobili je puno manji od očekivanog.
 
-Sljedeća varijabla koja je zanimljiva je varijabla Unemployment. Vidjeli smo da su ona i Below.Poverty.Line u jakoj pozitivnoj korelacijskoj vezi. Zanima nas znači li veći postotak ljudi koji nemaju završenu srednju školu i veću nezaposlenost. 
-
-```{r}
-cor(chicago_pc$Unemployment, chicago_pc$No.High.School.Diploma)
-```
-
-Očekivana pozitivna korelacija je prisutna, ali ne u onoj količini koju smo možda očekivali.
-
-Zanima nas kako se ponašaju varijable Unemployment i Dependecy.
-
-```{r}
-cor(chicago_pc$Dependency, chicago_pc$Unemployment)
-```
-Uočavamo dosta visoku pozitivnu korelaciju.  //EXPLAIN MORE 
-
-
-Za varijable Unemployment i Crowded.Housing očekujemo pozitivnu korelaciju. Naime, ako netko nema posao onda vjerojatno nema ni dovoljno za stanarinu koja bi odgovarala veličini prostora koji je potreban za zdrav život.
-
-```{r}
-cor(chicago_pc$Unemployment, chicago_pc$Crowded.Housing)
-```
-Dobivamo slabu pozitivinu korelaciju. Podosta slabiju od očekivane.
 Kako smo dobili broj koji je blizu 0, ovaj primjer je dobar kandidant da napravimo korelacijski test.
 
 ```{r}
@@ -272,41 +244,15 @@ cor.test(chicago_pc$Unemployment, chicago_pc$Crowded.Housing)
 ```
 P-vrijednost testa je 0.2105. To znači da u slučaju da varijable Unemployment i Crowded.Housing nisu u nikakvoj korelaciji (tj. korelacija je 0), vjerojatnost da dobijemo pozitivnu korelaciju od 0.144 i više je 21%. Možemo posumnjati u pozitivnu korelaciju ove dvije varijable. 
 
-```{r}
-cor(chicago_pc$Unemployment, chicago_pc$Per.Capita.Income)
-```
-Za varijable Unemployment i Per.Capita.Income uočavamo dosta jaku negativnu korelaciju što je očekivano. Kvartovi s većom zapošljenosti imaju i veći prihod.
+Od drugih očekivanih vrijednosti imamo Per.Capita.Income i No.High.School.Diploma (-0.71). Ima smisla da su kvartovi siromašniji što je manji stupanj edukacije ljudi koji žive tamo.
+Također ako manji Dependecy znači zdraviju i bogatiju ekonomiju, onda također očekujemo da će varijable Dependecy i Per.Capita.Income biti jako negativno korelirane što i jesu (-0.76).
 
-Dalje gledamo kako se varijabla Per.Capita.Income ponaša u kombinaciji s drugima. Već smo primjetili da su Unemployment i Below.Poverty.Line usko povezani, a nakon toga da je Per.Capita.Income u negativnoj korelaciji s obije varijable. S tim da je više negativno koreliran s varijablom Unemployment. Također smo primjetili da su varijable Unemployment i No.High.School.Diploma u nešto slabijoj pozitivnoj korelaciji (0.32). Međutim, očekujemo da će varijable Per.Capita.Income i No.High.School.Diploma biti u nešto jačoj vezi. Očekujemo da veći postotak školovanih ljudi daje i veće prihode. 
-
-```{r}
-cor(chicago_pc$Per.Capita.Income, chicago_pc$No.High.School.Diploma)
-```
-Ako manji Dependecy znači zdraviju i bogatiju ekonomiju, onda također očekujemo da će varijable Dependecy i Per.Capita.Income biti jako negativno korelirane.
-
-```{r}
-cor(chicago_pc$Per.Capita.Income, chicago_pc$Dependency)
-```
-Očekujemo da Per.Capita.Income ima dosta jak utjecaj na varijablu Crowded.Housing, tj. ako je kvart bogatiji, onda očekujemo puno manji broj ljudi koji živi u premalih domovima.
-
-```{r}
-cor(chicago_pc$Per.Capita.Income, chicago_pc$Crowded.Housing)
-```
-Dobivamo očekivanu negativnu korelaciju, ali kao i kod varijabla Unemployment i Crowded.Housing, nešto slabiju od očekivane vrijednosti. Ipak, dobiveni broj nije blizu 0 u smislu da bismo posumjnali u negativnu korelaciju ove dvije varijable.
-
-Međutim, i dalje nismo našli nijednu varijblu koja jako dobro objašnjava Crowded.Housing. Očekivali smo da će Unemployment to najbolje objasniti, ali smo došli do zaključka da Unemployment ima dobru vjerojatnost da uopće ne objašnjava zašto ljudi žive u premalim prostorima. Per.Capita.Income daje neke odgovore na ta pitanja, međutim pitanje je postoji li varijabla koja to radi bolje. 
-
-Uz malo isprobavanja, došli smo do sljedećeg:
-
-```{r}
-cor(chicago_pc$No.High.School.Diploma, chicago_pc$Crowded.Housing)
-```
-Ovo je najjača korelacija koju smo vidjeli do sada, te ako napravimo test...
+Najveća vrijednost koja nije korelacija varijable sa samom sobom vidimo u slučaju No.High.School.Diploma i Crowded.Housing (0.91). Ovo je dosta zanimljiv i na prvi pogled jako neočekivani rezultat koji smo dobili. Sljedće što smo napravili je test.
 
 ```{r}
 cor.test(chicago_pc$No.High.School.Diploma, chicago_pc$Crowded.Housing)
 ```
-... vidimo da je 95%-tni interval između 0.85 i 0.93. Zaključujemo da su ove dvije varijable zaista jako zavisne. Iz tog razloga, možemo zaključiti da manjak obrazovanja najviše pridonosi prenatrpanim domovima. Vidjeli smo prije da su varijable No.High.School.Diploma i Per.Capita.Income dosta jako negativno korelirane (-0.70), međutim postavlja se pitanje zašto onda Per.Capita.Income i Crowded.Housing nisu jače korelirane?
+Vidimo da je 95%-tni interval između 0.85 i 0.93. Zaključujemo da su ove dvije varijable zaista jako zavisne. Iz tog razloga, možemo zaključiti da manjak obrazovanja najviše pridonosi prenatrpanim domovima. Međutim još uvijek ne znamo objasniti zašto je to tako. 
 
 Ovo je dobar primjer da probamo napraviti linearnu regresiju i pogledamo kako to sve izgleda (Figure \ref{fig:regression}).
 
@@ -340,7 +286,18 @@ reg2 <- lm(y ~ x + x1, chicago_pc)
 
 summary(reg2)
 ```
-Vidimo da smo dobili nešto bolji model. Smanjili smo std. error svih koeficijenata, povećali smo značajnost koeficijenta b0 i povećali smo koeficijent determinacije.
+Vidimo da smo dobili nešto bolji model. Smanjili smo std. error svih koeficijenata, povećali smo značajnost koeficijenta b0 i povećali smo koeficijent determinacije. Sljedeće što trebamo napraviti je pogledati standardizirane reziduale. 
+
+```{r}
+reg2.stdres = rstandard(reg2)
+plot(chicago_pc$No.High.School.Diploma, reg2.stdres, 
+     xlab = "No high school diploma",
+     ylab = "Standardized residuals")
+ abline(0, 0)
+```
+Vidimo da su skoro sve osim nekoliko vrijednosti između -2 i 2 što je vrlo prihvatljivi rezultat. Skoro identičnu sitauciju dobivamo ako ubacimo Per.Capita.Income i Crowded.Housing.
+
+```
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
 
