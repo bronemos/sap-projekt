@@ -91,7 +91,7 @@ print(mytable)
 
 Nakon što smo izdvojili podatke, možemo nacrtati histogram po dijelovima dana.
 
-```{r frequency_hist, fig.cap = "Frekventnost kriminalnih radnji po dijelovima dana", out.width='0.9\\linewidth'}
+```{r frequency_hist_day, fig.cap = "Frekventnost kriminalnih radnji po dijelovima dana", out.width='0.9\\linewidth'}
 hist(
   day_parts,
   breaks = 0:3,
