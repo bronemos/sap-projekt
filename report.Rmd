@@ -79,6 +79,42 @@ rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
 ```
 Razlog ovakvog izgleda histograma je činjenica da sve kriminalne radnje promatramo zajedno, kasnije ćemo vidjeti da uzimanjem određenog tipa kriminala dolazimo do drukčijeg izgleda aktivnosti tokom dana.\
 
+
+Izdvojimo sad broj kriminalnih djela u 3 različita doba dana: noć koja traje od 22h do 6h, jutro koje traje od 6h do 14h i podne koje smo uzeli da traje od 14h do 22h.
+```{r}
+day_parts<-ifelse(hours>=22|hours<6,rr2<-3,
+                     ifelse(hours>=6&hours<14,rr2<-1,
+                            rr2<-2))
+mytable<-table(day_parts)
+print(mytable)
+```
+
+Nakon što smo izdvojili podatke, možemo nacrtati histogram po dijelovima dana.
+
+```{r frequency_hist, fig.cap = "Frekventnost kriminalnih radnji po dijelovima dana", out.width='0.9\\linewidth'}
+hist(
+  day_parts,
+  breaks = 0:3,
+  main = "Frequency of criminal activities for day parts",
+  xlab = "Day part",
+  ylab = "Frequency",
+  col = "light blue",
+  xaxt = "n"
+)
+axis(side = 1,
+     at = seq(0.5, 3, 1),
+     labels = c("morning", "afternoon", "night")
+     )
+```
+Iz histograma je očito da se najviše kriminalnih djela događa između 14 i 22h. Sada HI kvadrat testom možemo provjeriti uniformnost ove distribucije, odnosno vidjeti je li ta razlika statistički značajna ili nije. Pretpostavit ćemo da je distribucija uniformna.
+Testirajmo hipotezu H0 jesu li kriminalna djela jednako distribuirana po svim djelovima dana, uz hipotezu H1 da nisu jednako distribuirana uz razinu značajnosti alpha = 0.05.
+
+```{r chi squared test}
+res<-chisq.test(as.integer(table(day_parts)), p = c(1/3, 1/3, 1/3))
+res
+```
+S obzirom da je p-value < 2.2e-16 izrazito manja od alpha = 0.05, odbacujemo H0 u korist H1 te bismo mogli zaključiti da ova distribucija nije uniformna, odnosno da broj kriminalnih djela nije isti u svakom dobu dana. Naravno, treba pripaziti i na veličinu podataka. S obzirom na velik broj podataka, može se dogoditi da se odbaci H0 u korist H1 kad to nije trebalo napraviti, ali s obzirom na izgled dijagrama, slažemo se s odbacivanjem H0 u korist H1.
+
 ## Kategorije kriminala u datasetu
 ```{r}
 categories <- unique(chicago_year$PRIMARY.DESCRIPTION)
@@ -187,10 +223,10 @@ plot(homicide_gdp,
 ```
 ## Odnos stope krađa i BDP per capita msm da je nespojivo, krade imamo samo u chicago_year, a tamo ne znamo BDP
 
-## Usporedba učestalosti krađa s učestalosti kriminala vezanih uz narkotike
-Promatranjem kretanja broja krađa i kriminala povezanog s narkoticima (Figure \ref{fig:theft_vs_narcotics}) može se uočiti da se broj krađa i broj kriminalnih djela povezanih s narkoticima podjednako mijenjaju. Izgleda kao da brojka obje vrste kriminalnih djela istovremeno pada odnosno raste. To nam dokazuje i vrlo visoka korelacija (0.7119473)
+## Pad kriminala vezan uz koronavirus
+Sljedeći graf prikazuje fascinantu činjenicu o smanjenju broja kriminalnih djela nakon početka pandemije koronavirusa i lockdowna. Prikaz je informativan te nećemo ulaziti u detaljniju analizu.
 
-```{r theft_vs_narcotics, fig.cap = "Usporedba broja krađa i kriminala vezanog za narkotike u periodu od godinu dana", out.width='0.9\\linewidth'}
+```{r theft_vs_narcotics, fig.cap = "Pad kriminala nakon pandemije koronavirusa - informativno", out.width='0.9\\linewidth'}
 
 theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT",]
 theft_dates <-
@@ -207,18 +243,25 @@ narcotics_dates <-
                "America/Chicago"),
   ))
 
+all_crimes <-
+  table(as.Date(
+    strptime(chicago_year$DATE..OF.OCCURRENCE, format = "%m/%d/%Y %I:%M:%S %p", tz =
+               "America/Chicago"),
+  ))
+
 plot(
   theft_dates,
   type = "l",
-  main = "Comparison of number of crimes related to\ntheft and narcotics in a year",
+  main = "Criminal acts fall during lockdown",
   xlab = "Date",
   ylab = "Number of crimes",
+  ylim=c(0,750)
 )
+lines(all_crimes, col = "green")
 lines(theft_dates, col = "red")
 lines(narcotics_dates, col = "blue")
-legend("topright", c("Theft", "Narcotics"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
+legend("topright", c("All crimes", "Theft", "Narcotics"), fill = c(rgb(0, 1, 0, 0.5), rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
 
-cor(theft_dates, narcotics_dates)
 
 ```
 
