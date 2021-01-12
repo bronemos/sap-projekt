@@ -62,7 +62,7 @@ table(hours)
 Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (Figure \ref{fig:frequency_hist}).\
 Inicijalna pretpostavka većine je vjerojatno da su kriminalne aktivnosti najfrekventnije u noćnim satima, ali histogram nam pokazuje drukčije.
 
-```{r frequency_hist, fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata", out.width='0.9\\linewidth'}
+```{r frequency_hist1, fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata", out.width='0.9\\linewidth'}
 hist(
   hours + 1,
   breaks = 0:24,
@@ -308,7 +308,7 @@ reg1 <- lm(y ~ x, chicago_pc)
 summary(reg1)
 
 ```
-```{r regression, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
+```{r regression1, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
 plot(
   x,
   y,
@@ -340,10 +340,184 @@ plot(chicago_pc$No.High.School.Diploma, reg2.stdres,
 ```
 Vidimo da su skoro sve osim nekoliko vrijednosti između -2 i 2 što je vrlo prihvatljivi rezultat. Skoro identičnu sitauciju dobivamo ako ubacimo Per.Capita.Income i Crowded.Housing.
 
-```
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
 
+Kategorija kriminala koju promatramo je Firearm.related. Prvo ćemo napraviti korelacijsku matricu da dobijemo dojam kako se brojke kreću i od kojih varijabli bismo mogli krenuti raditi regresijski model.
+
 ```{r}
+matrixData2 <- chicago_pc[, c(-1, -2, -3)]
+matrix2 <- cor(matrixData2)
+matrix2[,1]
+```
+
+Firearm.related i Unemployment imaju najveći korelacijski koeficijent pa ćemo započeti graditi regresijski model s tom varijablom.
+
+```{r}
+x1 <- as.matrix(chicago_pc[10]) #Unemployment
+y <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(y ~ x1, chicago_pc)
+
+summary(reg)
+```
+
+```{r regression2, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
+plot(
+  x1,
+  y,
+  pch = 16,
+  cex = 1.3,
+  col = "lightgreen",
+  xlab = "Percentage of unemployed people",
+  ylab = "Firearm related crimes per 100 000",
+)
+abline(lm(y ~ x1), col = "pink", lwd = 2)
+```
+Slika i regresija koju smo dobili nije loša, međutim odmah primjećujemo da imamo stršećih vrijednosti. Također vidimo da nam koeficijent b0 nije statistički značajan. Primjenjujući transformaciju nad x1, pokušat ćemo dobiti nešto bolju regresiju.
+
+
+```{r}
+x1 <- as.matrix(chicago_pc[10]) #Unemployment
+y <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(y ~ log(x1), chicago_pc)
+
+summary(reg)
+```
+Ako primjenimo logaritamsku transformaciju, koeficijent b0 postaje jako značajan, a i koeficijent determinacije se povećao, te F-test daje puno bolje rezultate. 
+
+
+```{r regression, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
+plot(
+  log(x1),
+  y,
+  pch = 16,
+  cex = 1.3,
+  col = "lightgreen",
+  xlab = "Percentage of unemployed people",
+  ylab = "Firearm related crimes per 100 000",
+)
+abline(lm(y ~ log(x1)), col = "pink", lwd = 2)
+```
+Na slici se još uvijek primjećju stršeće vrijednosti. 
+
+Sljedeće dvije varijable koje su u velikoj korelaciji su Below.Poverty.Level i Dependency. Obije varijable su visoko korelirane s varijablom Unemployment što smo promatrali prije. 
+
+```{r}
+x1 <- as.matrix(chicago_pc[10]) #Unemployment
+x2 <- as.matrix(chicago_pc[7]) #Dependency
+y <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(y ~ log(x1) + x2, chicago_pc)
+
+summary(reg)
+```
+ Ako dodamo varijablu Dependacy u model, on se nije puno poboljšao, štoviše varijabla je statistički neznačajna.
+ 
+```{r}
+x1 <- as.matrix(chicago_pc[10]) #Unemployment
+x2 <- as.matrix(chicago_pc[7]) #Dependency
+x3 <- as.matrix(chicago_pc[5]) #Below.Poverty.Level
+y <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(y ~ log(x1) + x2 + x3, chicago_pc)
+
+summary(reg)
+```
+Te ako dodamo i varijablu Below.Poverty.Level dobivamo sličnu stvar što je i očekivano. Sve tri varijable su dosta zavisne te ne dobivamo puno novih informacija.
+ 
+Iz tog razloga ćemo izbaciti te varijable iz modela.
+
+Tražimo neku drugu varijablu koja nije jako kolerirana s našom prvom odabranom varijablom i tražimo onu koja daje trenutačno najbolji model. Dolazimo do rezultata da je to varijabla No.High.School.Diploma.
+```{r}
+x1 <- as.matrix(chicago_pc[10]) #Unemployment
+x2 <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
+y <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(y ~ log(x1) + x2, chicago_pc)
+
+summary(reg)
+```
+Tražimo postoji li još kakva varijabla koja bi mogla pridonjeti modelu.
+
+Ako vizualiziramo parove Per.Capita.Income, Firearm.related možemo uočiti pravilnost. U siromašnijim kvartovima, kriminal koji uključuje vatreno oružje je puno češće nego u bogatijim kvartovima. Štoviše, uočavamo eksponencijalni pad pa ćemo primjeniti transformaciju podataka nad tom varijablom.
+ 
+```{r}
+plot(
+  chicago_pc$Per.Capita.Income,
+  y,
+  pch = 16,
+  cex = 1.3,
+  col = "lightgreen",
+  xlab = "Per capita income",
+  ylab = "Firearm related crimes per 100 000",
+)
+```
+
+```{r}
+x1 <- as.matrix(chicago_pc[10]) #Unemployment
+x2 <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
+x3 <- as.matrix(chicago_pc[9]) #Per.Capita.Income
+y <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(y ~ log(x1) + x2 + log(x3), chicago_pc)
+
+summary(reg)
 
 ```
+Dodavanjem ostalih dviju varijabli Crowded.Housing i Below.Poverty.Level nismo dobili bolji model. To ima smisla jer Crowded.Housing je u izrazito jakoj korelaciji s No.High.School.Diploma, a Below.Poverty.Level je u takvom odnosu s varijablom Unemployment. Iz tog razloga, ove dvije varijable ne donose puno novih informacija koje bi značajno poboljšale model.
+
+Sada je vrijeme da testiramo model i vidimo zadovoljala li model sve pretpostavke.
+
+Provjeravamo homogenost varijanci. Kako bi vrijedila ta pretpostavka, trebamo dobiti što bolju moguću horizontalnu liniju. 
+
+```{r}
+plot(reg, 3)
+```
+Dobar znak bi bio da smo dobili horizontalnu liniju, vidimo donekle horizontalnu liniju ali ne možemo na temelju ovoga zaključiti jesu li varijance homogene. Zato radimo ncvTest (Non-Constant Error Variance Test) čija je nulta hipozeta da su varijance konstantne, tj. homogene.
+
+```{r}
+library(car)
+ncvTest(reg)
+```
+Test kaže da naše varijance nisu homogene. To možemo popraviti tako da napravimo transformaciju nad y vrijednosti regresije. 
+
+```{r}
+x1 <- as.matrix(chicago_pc[10]) #Unemployment
+x2 <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
+x3 <- as.matrix(chicago_pc[9]) #Per.Capita.Income
+y <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(log(y) ~ log(x1) +  x2 + log(x3), chicago_pc)
+
+summary(reg)
+```
+Sada testiramo zadovoljava li ovakav model uvjet homogenosti varijance. 
+
+```{r}
+plot(reg, 3)
+```
+Linija izgleda puno pravilnije. 
+
+```{r}
+ncvTest(reg)
+```
+Model sada prolazi test. 
+
+Dalje testiramo nezavisnost pomoću Durbin-Watson testa.
+
+```{r}
+durbinWatsonTest(reg)
+```
+Na razini značajnosti od 0.05, ne možemo odbaciti nul-hipotezu koja je da su reziduali nezavisni.
+
+Dalje gledamo normalnost reziduala.
+
+```{r}
+plot(reg, 2)
+```
+Reziduali ne prate najbolje liniju koju trebaju, pa radimo test.
+
+```{r}
+library(MASS)
+sresid <- studres(reg) 
+shapiro.test(sresid)
+```
+Na razini značnajnosti od 0.05 odbacujemo nul hipotezu da su reziduali normalno distribuirani.
+
+
+
