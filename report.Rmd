@@ -209,6 +209,26 @@ rug(seq(0, 24, 2), ticksize = -0.03, side = 1)
 legend("bottomright", c("Theft", "Homicide"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
 
 ```
+
+
+## Učestalost krađa i kriminala vezanih uz narkotike
+
+```{r theft_narcotics, warning=FALSE, fig.cap = "Učestalost krađa i kriminala vezanih uz narkotike", out.width='0.9\\linewidth'}
+
+theft_crimes <- c("THEFT", "ROBBERY", "BURGLARY")
+theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION %in% theft_crimes,]
+narcotic_crimes <- c("NARCOTICS", "OTHER NARCOTIC VIOLATION")
+all_narocitcs <- chicago_year[chicago_year$PRIMARY.DESCRIPTION %in% narcotic_crimes,]
+x <- nrow(theft)
+n <- nrow(theft) + nrow(all_narocitcs)
+x
+res <- prop.test(x, n, p = 0.5, correct = FALSE,
+              alternative = "greater")
+
+res
+```
+p-vrijednost manja od 0.05, odbacujemo H0 u prilog H1
+
 ## Odnos stope ubojstava i BDP per Capita
 Promatranjem odnosa stope ubojstava i BDP per Capita (Figure \ref{fig:homicide_gdp}) uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
 Jedan od razloga takvog trenda može biti raslojenost populacije po kvartovima, pa tako bogatiji dio populacije živi u sigurnijim kvartovima sa manje kriminala.
