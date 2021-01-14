@@ -24,6 +24,11 @@ Cilj ovog projekta je analizirati i vizualno prikazati podatke o kriminalu na po
 
 ```{r echo=T, error=FALSE, warning=FALSE, message=FALSE}
 library(dplyr)
+library(corrplot)
+library(car)
+library(MASS)
+library(lmtest)
+library(het.test)
 ```
 
 ## Učitavanje podataka
@@ -290,7 +295,6 @@ legend("topright", c("All crimes", "Theft", "Narcotics"), fill = c(rgb(0, 1, 0, 
 Prije nego što krenemo na veze između socio-ekonomskih faktora i kategorije kriminala, prvo nas zanima kakve su zavisnosti između različitih socio-ekonomskih faktora. U tu svrhu, napravili smo korelacijsku matricu.
 
 ```{r}
-library(corrplot)
 matrixData <- chicago_pc[, c(-1, -2, -3, -4)]
 matrix <- cor(matrixData)
 matrix
@@ -399,7 +403,7 @@ reg <- lm(firearm.related ~ log(unemployment), chicago_pc)
 
 summary(reg)
 ```
-Ako primjenimo logaritamsku transformaciju, koeficijent b0 postaje jako značajan, a i koeficijent determinacije se povećao, te F-test daje puno bolje rezultate. 
+Ako primijenimo logaritamsku transformaciju, koeficijent b0 postaje jako značajan, a i koeficijent determinacije se povećao, te F-test daje puno bolje rezultate. 
 
 
 ```{r regression, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
@@ -427,7 +431,7 @@ reg <-
 
 summary(reg)
 ```
- Ako dodamo varijablu Dependacy u model, on se nije puno poboljšao, štoviše varijabla je statistički neznačajna.
+ Ako dodamo varijablu Dependency u model, on se nije puno poboljšao, štoviše varijabla je statistički neznačajna.
  
 ```{r}
 
@@ -459,7 +463,7 @@ summary(reg)
 ```
 Tražimo postoji li još kakva varijabla koja bi mogla pridonjeti modelu.
 
-Ako vizualiziramo parove Per.Capita.Income, Firearm.related možemo uočiti pravilnost. U siromašnijim kvartovima, kriminal koji uključuje vatreno oružje je puno češće nego u bogatijim kvartovima. Štoviše, uočavamo eksponencijalni pad pa ćemo primjeniti transformaciju podataka nad tom varijablom.
+Ako vizualiziramo parove Per.Capita.Income, Firearm.related možemo uočiti pravilnost. U siromašnijim kvartovima, kriminal koji uključuje vatreno oružje je puno češće nego u bogatijim kvartovima. Štoviše, uočavamo eksponencijalni pad pa ćemo primijeniti transformaciju podataka nad tom varijablom.
  
 ```{r}
 plot(
@@ -499,9 +503,7 @@ plot(reg, 3)
 ```
 Horizontalna linija je dobar znak da homogenost varijance vrijedi. Svejedno idemo testirati pomoću ncvTesta (Non-Constant Error Variance Test) čija je nul hipoteza da su varijance konstantne.
 
-
 ```{r}
-library(car)
 ncvTest(reg)
 ```
 Model prolazi test na razini značajnosti 0.05.
@@ -521,7 +523,6 @@ plot(reg, 2)
 Reziduali ne prate najbolje liniju koju trebaju, pa radimo test.
 
 ```{r}
-library(MASS)
 sresid <- studres(reg) 
 shapiro.test(sresid)
 ```
@@ -550,7 +551,7 @@ regression <- lm(homicide ~ unemployment, chicago_pc)
 
 summary(regression)
 ```
-S obzirom da je srednja vrijednost veća od medijana zaključujemo da se radi o pozitivno zakrivljenoj distribuciji.
+S obzirom da je srednja vrijednost veća od medijana zaključujemo da se radi o pozitivno zakrivljenoj distribuciji.  
 Kako bismo dobili bolje rezultate na naše podatke možemo primijeniti neku od transformacija.
 
 ```{r}
@@ -561,8 +562,8 @@ summary(regression_sqrt)
 summary(regression_log)
 ```
 
-Usporedbom rezultata uočavamo da je sqrt transformacija prikladnija u ovoj situaciji.
-Općenito sqrt transformacija je pogodna pri manjim zakrivljenostima dok log daje bolje rezultate ako je zakrivljenost izraženija.
+Usporedbom rezultata uočavamo da je sqrt transformacija prikladnija u ovoj situaciji, također primijećujemo da smo dobili bolju signifikantnost varijable.  
+Općenito sqrt transformacija je pogodna pri manjim zakrivljenostima dok log daje bolje rezultate ako je zakrivljenost izraženija.  
 Vizualizirajmo dobivenu regresiju.
 
 ```{r}
@@ -587,17 +588,76 @@ cat("Median: ", median(below_poverty), "\n")
 Kao i kod prijašnje varijable primijećujemo pozitivnu zakrivljenost.
 
 ```{r}
-regression_2 <- lm(homicide ~ sqrt(unemployment) + below_poverty, chicago_pc)
-regression_2_sqrt <- lm(homicide ~ sqrt(unemployment) + sqrt(below_poverty), chicago_pc)
-regression_2_log <- lm(homicide ~ sqrt(unemployment) + log(below_poverty), chicago_pc)
+regression_2 <-
+  lm(homicide ~ sqrt(unemployment) + below_poverty, chicago_pc)
+regression_2_sqrt <-
+  lm(homicide ~ sqrt(unemployment) + sqrt(below_poverty), chicago_pc)
+regression_2_log <-
+  lm(homicide ~ sqrt(unemployment) + log(below_poverty), chicago_pc)
 
 summary(regression_2)
 summary(regression_2_sqrt)
 summary(regression_2_log)
 ```
-Usporedbom 3 mogućnosti kombiniranja varijabli, primijećujemo da zadnja opcija (kombinacija sqrt i log transformaciej) daje najbolje rezultate stoga ju možemo iscrtati i usporediti s prethodnim grafom.
+Usporedbom 3 mogućnosti kombiniranja varijabli, primijećujemo da zadnja opcija (kombinacija sqrt i log transformaciej) daje najbolje rezultate.  
+Pokušajmo sada dodati i treću varijablu po koreliranosti, Dependency.
 
 ```{r}
+dependency <- as.matrix(chicago_pc[7])
+regression_3 <-
+  lm(homicide ~ sqrt(unemployment) + log(below_poverty) + dependency,
+     chicago_pc)
 
+summary(regression_3)
+```
+Kao i kod analize varijable Firearm related, za varijablu Homicide primijećujemo slično ponašanje - dodavanje varijable Dependency uzrokuje minimalna poboljšanja u modelu te ima vrlo malu signifikantnost.  
+Nakon ispitivanja nekoliko modela pokazalo se da varijable per_capita_income i crowded housing također imaju vrlo malu signifikanost te ne poboljšavaju razine signifikantnosti drugih varijabli.
+No dodamo li No high school diploma varijablu u model, ona ne da sama sebe ima veliku signifikantnost nego i značajno poboljšava signifikantnost varijabli dependency i below poverty level.  
+Sljedeći model pokazao je najbolje performanse:
+
+```{r}
+no_diploma <- as.matrix(chicago_pc[8])
+
+regression_4 <-
+  lm(
+    homicide ~ sqrt(unemployment) + log(below_poverty) + dependency + no_diploma,
+    chicago_pc
+  )
+
+summary(regression_4)
+```
+```{r}
+plot(regression_4, 1)
+```
+```{r}
+plot(regression_4, 3)
+```
+NCV testom provjerimo jesu li varijance homogene.
+```{r}
+ncvTest(regression_4)
+```
+Obzirom na činjenicu da linija u grafu iznad nije horizontalna i bilo je za očekivati da varijance nisu homogene.\
+Primijenimo sqrt transformaciju na homicide varijablu.
+
+```{r}
+regression_4_sqrt <-
+  lm(
+    sqrt(homicide) ~ sqrt(unemployment) + log(below_poverty) + dependency + no_diploma,
+    chicago_pc
+  )
+
+summary(regression_4_sqrt)
+```
+Promotrimo sada graf sa standardiziranim rezidualima:
+```{r}
+plot(regression_4_sqrt, 3)
+```
+Vidimo da se pravac znatno izravnao u usporedbi s modelom
+
+```{r}
+plot(regression_4_sqrt, 2)
+durbinWatsonTest(regression_4_sqrt)
 ```
 
+```{r}
+```
