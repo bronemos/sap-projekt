@@ -320,45 +320,39 @@ Vidimo da je 95%-tni interval između 0.85 i 0.93. Zaključujemo da su ove dvije
 Ovo je dobar primjer da probamo napraviti linearnu regresiju i pogledamo kako to sve izgleda (Figure \ref{fig:regression}).
 
 ```{r}
-x <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
-y <- as.matrix(chicago_pc[6]) #Crowded.Housing
+no.high.school.diploma <-
+  as.matrix(chicago_pc[8]) #No.High.School.Diploma
+crowded.housing <- as.matrix(chicago_pc[6]) #Crowded.Housing
 
-reg1 <- lm(y ~ x, chicago_pc)
+reg1 <- lm(crowded.housing  ~ no.high.school.diploma, chicago_pc)
 
 summary(reg1)
 
 ```
 ```{r regression1, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
 plot(
-  x,
-  y,
+  no.high.school.diploma,
+  crowded.housing ,
   pch = 16,
   cex = 1.3,
   col = "lightgreen",
   xlab = "Percentage of people without high school diploma",
   ylab = "Percentage of people living in crowded houses",
 )
-abline(lm(y ~ x), col = "pink", lwd = 2)
+abline(lm(crowded.housing  ~ no.high.school.diploma), col = "pink", lwd = 2)
 ```
 Probat ćemo dodati i Per.Capita.Income u ovu priču i pogledati kako se model ponaša u toj situaciji.
 
 ```{r}
-x1 <- as.matrix(chicago_pc[9]) #Per.Capita.Income
+per.capita.income <- as.matrix(chicago_pc[9]) #Per.Capita.Income
 
-reg2 <- lm(y ~ x + x1, chicago_pc)
+reg2 <-
+  lm(crowded.housing ~ no.high.school.diploma + per.capita.income,
+     chicago_pc)
 
 summary(reg2)
 ```
 Vidimo da smo dobili nešto bolji model. Smanjili smo std. error svih koeficijenata, povećali smo značajnost koeficijenta b0 i povećali smo koeficijent determinacije. Sljedeće što trebamo napraviti je pogledati standardizirane reziduale. 
-
-```{r}
-reg2.stdres = rstandard(reg2)
-plot(chicago_pc$No.High.School.Diploma, reg2.stdres, 
-     xlab = "No high school diploma",
-     ylab = "Standardized residuals")
- abline(0, 0)
-```
-Vidimo da su skoro sve osim nekoliko vrijednosti između -2 i 2 što je vrlo prihvatljivi rezultat. Skoro identičnu sitauciju dobivamo ako ubacimo Per.Capita.Income i Crowded.Housing.
 
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
@@ -376,32 +370,32 @@ matrix2[,1]
 Firearm.related i Unemployment imaju najveći korelacijski koeficijent pa ćemo započeti graditi regresijski model s tom varijablom.
 
 ```{r}
-x1 <- as.matrix(chicago_pc[10]) #Unemployment
-y <- as.matrix(chicago_pc[4]) #Firearm.related
-reg <- lm(y ~ x1, chicago_pc)
+unemployment <- as.matrix(chicago_pc[10]) #Unemployment
+firearm.related <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(firearm.related ~ unemployment, chicago_pc)
 
 summary(reg)
 ```
 
 ```{r regression2, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
 plot(
-  x1,
-  y,
+  unemployment,
+  firearm.related,
   pch = 16,
   cex = 1.3,
   col = "lightgreen",
   xlab = "Percentage of unemployed people",
   ylab = "Firearm related crimes per 100 000",
 )
-abline(lm(y ~ x1), col = "pink", lwd = 2)
+abline(lm(firearm.related ~ unemployment), col = "pink", lwd = 2)
 ```
-Slika i regresija koju smo dobili nije loša, međutim odmah primjećujemo da imamo stršećih vrijednosti. Također vidimo da nam koeficijent b0 nije statistički značajan. Primjenjujući transformaciju nad x1, pokušat ćemo dobiti nešto bolju regresiju.
+Slika i regresija koju smo dobili nije loša, međutim odmah primjećujemo da imamo stršećih vrijednosti. Također vidimo da nam koeficijent b0 nije statistički značajan. Primjenjujući transformaciju nad varijablom Unemployment, pokušat ćemo dobiti nešto bolju regresiju.
 
 
 ```{r}
-x1 <- as.matrix(chicago_pc[10]) #Unemployment
-y <- as.matrix(chicago_pc[4]) #Firearm.related
-reg <- lm(y ~ log(x1), chicago_pc)
+unemployment <- as.matrix(chicago_pc[10]) #Unemployment
+firearm.related <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <- lm(firearm.related ~ log(unemployment), chicago_pc)
 
 summary(reg)
 ```
@@ -410,36 +404,40 @@ Ako primjenimo logaritamsku transformaciju, koeficijent b0 postaje jako značaja
 
 ```{r regression, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
 plot(
-  log(x1),
-  y,
+  log(unemployment),
+  firearm.related,
   pch = 16,
   cex = 1.3,
   col = "lightgreen",
   xlab = "Percentage of unemployed people",
   ylab = "Firearm related crimes per 100 000",
 )
-abline(lm(y ~ log(x1)), col = "pink", lwd = 2)
+abline(lm(firearm.related ~ log(unemployment)), col = "pink", lwd = 2)
 ```
 Na slici se još uvijek primjećju stršeće vrijednosti. 
 
 Sljedeće dvije varijable koje su u velikoj korelaciji su Below.Poverty.Level i Dependency. Obje varijable su visoko korelirane s varijablom Unemployment što smo promatrali prije. 
 
 ```{r}
-x1 <- as.matrix(chicago_pc[10]) #Unemployment
-x2 <- as.matrix(chicago_pc[7]) #Dependency
-y <- as.matrix(chicago_pc[4]) #Firearm.related
-reg <- lm(y ~ log(x1) + x2, chicago_pc)
+unemployment <- as.matrix(chicago_pc[10]) #Unemployment
+dependecy <- as.matrix(chicago_pc[7]) #Dependency
+firearm.related <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <-
+  lm(firearm.related ~ log(unemployment) + dependecy, chicago_pc)
 
 summary(reg)
 ```
  Ako dodamo varijablu Dependacy u model, on se nije puno poboljšao, štoviše varijabla je statistički neznačajna.
  
 ```{r}
-x1 <- as.matrix(chicago_pc[10]) #Unemployment
-x2 <- as.matrix(chicago_pc[7]) #Dependency
-x3 <- as.matrix(chicago_pc[5]) #Below.Poverty.Level
-y <- as.matrix(chicago_pc[4]) #Firearm.related
-reg <- lm(y ~ log(x1) + x2 + x3, chicago_pc)
+
+unemployment <- as.matrix(chicago_pc[10]) #Unemployment
+dependecy <- as.matrix(chicago_pc[7]) #Dependency
+firearm.related <- as.matrix(chicago_pc[4]) #Firearm.related
+below.poverty.level <- as.matrix(chicago_pc[5]) #Below.Poverty.Level
+reg <-
+  lm(firearm.related ~ log(unemployment) + dependecy + below.poverty.level,
+     chicago_pc)
 
 summary(reg)
 ```
@@ -449,10 +447,13 @@ Iz tog razloga ćemo izbaciti te varijable iz modela.
 
 Tražimo neku drugu varijablu koja nije jako kolerirana s našom prvom odabranom varijablom i tražimo onu koja daje trenutačno najbolji model. Dolazimo do rezultata da je to varijabla No.High.School.Diploma.
 ```{r}
-x1 <- as.matrix(chicago_pc[10]) #Unemployment
-x2 <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
-y <- as.matrix(chicago_pc[4]) #Firearm.related
-reg <- lm(y ~ log(x1) + x2, chicago_pc)
+unemployment <- as.matrix(chicago_pc[10]) #Unemployment
+no.high.school.diploma <-
+  as.matrix(chicago_pc[8]) #No.High.School.Diploma
+firearm.related <- as.matrix(chicago_pc[4]) #Firearm.related
+reg <-
+  lm(firearm.related ~ log(unemployment) + no.high.school.diploma,
+     chicago_pc)
 
 summary(reg)
 ```
@@ -463,7 +464,7 @@ Ako vizualiziramo parove Per.Capita.Income, Firearm.related možemo uočiti prav
 ```{r}
 plot(
   chicago_pc$Per.Capita.Income,
-  y,
+  firearm.related,
   pch = 16,
   cex = 1.3,
   col = "lightgreen",
@@ -473,16 +474,21 @@ plot(
 ```
 
 ```{r}
-x1 <- as.matrix(chicago_pc[10]) #Unemployment
-x2 <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
-x3 <- as.matrix(chicago_pc[9]) #Per.Capita.Income
-y <- as.matrix(chicago_pc[4]) #Firearm.related
-reg <- lm(y ~ log(x1) + x2 + log(x3), chicago_pc)
+unemployment <- as.matrix(chicago_pc[10]) #Unemployment
+no.high.school.diploma <-
+  as.matrix(chicago_pc[8]) #No.High.School.Diploma
+firearm.related <- as.matrix(chicago_pc[4]) #Firearm.related
+per.capita.income <- as.matrix(chicago_pc[9]) #Per.Capita.Income
+reg <-
+  lm(
+    log(firearm.related) ~ log(unemployment) + no.high.school.diploma + log(per.capita.income),
+    chicago_pc
+  )
 
 summary(reg)
 
 ```
-Dodavanjem ostalih dviju varijabli Crowded.Housing i Below.Poverty.Level nismo dobili bolji model. To ima smisla jer Crowded.Housing je u izrazito jakoj korelaciji s No.High.School.Diploma, a Below.Poverty.Level je u takvom odnosu s varijablom Unemployment. Iz tog razloga, ove dvije varijable ne donose puno novih informacija koje bi značajno poboljšale model.
+Dodavanjem ostalih dviju varijabli Crowded.Housing i Below.Poverty.Level nismo dobili bolji model pa s ovime završavamo gradnju modela.
 
 Sada je vrijeme da testiramo model i vidimo zadovoljala li model sve pretpostavke.
 
@@ -491,34 +497,14 @@ Provjeravamo homogenost varijanci. Kako bi vrijedila ta pretpostavka, trebamo do
 ```{r}
 plot(reg, 3)
 ```
-Dobar znak bi bio da smo dobili horizontalnu liniju, vidimo donekle horizontalnu liniju ali ne možemo na temelju ovoga zaključiti jesu li varijance homogene. Zato radimo ncvTest (Non-Constant Error Variance Test) čija je nulta hipozeta da su varijance konstantne, tj. homogene.
+Horizontalna linija je dobar znak da homogenost varijance vrijedi. Svejedno idemo testirati pomoću ncvTesta (Non-Constant Error Variance Test) čija je nul hipoteza da su varijance konstantne.
+
 
 ```{r}
 library(car)
 ncvTest(reg)
 ```
-Test kaže da naše varijance nisu homogene. To možemo popraviti tako da napravimo transformaciju nad y vrijednosti regresije. 
-
-```{r}
-x1 <- as.matrix(chicago_pc[10]) #Unemployment
-x2 <- as.matrix(chicago_pc[8]) #No.High.School.Diploma
-x3 <- as.matrix(chicago_pc[9]) #Per.Capita.Income
-y <- as.matrix(chicago_pc[4]) #Firearm.related
-reg <- lm(log(y) ~ log(x1) +  x2 + log(x3), chicago_pc)
-
-summary(reg)
-```
-Sada testiramo zadovoljava li ovakav model uvjet homogenosti varijance. 
-
-```{r}
-plot(reg, 3)
-```
-Linija izgleda puno pravilnije. 
-
-```{r}
-ncvTest(reg)
-```
-Model sada prolazi test. 
+Model prolazi test na razini značajnosti 0.05.
 
 Dalje testiramo nezavisnost pomoću Durbin-Watson testa.
 
@@ -540,6 +526,8 @@ sresid <- studres(reg)
 shapiro.test(sresid)
 ```
 Na razini značnajnosti od 0.05 odbacujemo nul hipotezu da su reziduali normalno distribuirani.
+
+
 
 ### Kategorija Assault Homicide
 
