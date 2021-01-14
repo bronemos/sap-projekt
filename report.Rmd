@@ -272,7 +272,7 @@ all_crimes <-
 plot(
   theft_dates,
   type = "l",
-  main = "Criminal acts fall during lockdown",
+  main = "Criminal acts decrease during lockdown",
   xlab = "Date",
   ylab = "Number of crimes",
   ylim=c(0,750)
@@ -363,7 +363,9 @@ Vidimo da su skoro sve osim nekoliko vrijednosti između -2 i 2 što je vrlo pri
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
 
-Kategorija kriminala koju promatramo je Firearm.related. Prvo ćemo napraviti korelacijsku matricu da dobijemo dojam kako se brojke kreću i od kojih varijabli bismo mogli krenuti raditi regresijski model.
+### Kategorija Firearm related
+
+Kategorija kriminala koju najprije promatramo je Firearm.related. Prvo ćemo napraviti korelacijsku matricu da dobijemo dojam kako se brojke kreću i od kojih varijabli bismo mogli krenuti raditi regresijski model.
 
 ```{r}
 matrixData2 <- chicago_pc[, c(-1, -2, -3)]
@@ -539,5 +541,15 @@ shapiro.test(sresid)
 ```
 Na razini značnajnosti od 0.05 odbacujemo nul hipotezu da su reziduali normalno distribuirani.
 
+### Kategorija Assault Homicide
 
+Promotrimo sada kategoriju Assault Homicide i njezinu korelaciju s drugim faktorima. 
+
+```{r}
+matrixHomicide <- chicago_pc[,c(-1, -2, -4)]
+corMatrixHomicide <- cor(matrixHomicide)
+corMatrixHomicide[,1]
+
+```
+Kao i kod kriminala vezanih za vatrena oružja vidimo jaku korelaciju s Nezaposlenošću.
 
