@@ -356,8 +356,7 @@ reg2 <-
 
 summary(reg2)
 ```
-Vidimo da smo dobili nešto bolji model. Smanjili smo std. error svih koeficijenata, povećali smo značajnost koeficijenta b0 i povećali smo koeficijent determinacije. Sljedeće što trebamo napraviti je pogledati standardizirane reziduale. 
-
+Vidimo da smo dobili nešto bolji model. Smanjili smo std. error svih koeficijenata, povećali smo značajnost koeficijenta b0 i povećali smo koeficijent determinacije. 
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
 
@@ -494,40 +493,28 @@ summary(reg)
 ```
 Dodavanjem ostalih dviju varijabli Crowded.Housing i Below.Poverty.Level nismo dobili bolji model pa s ovime završavamo gradnju modela.
 
-Sada je vrijeme da testiramo model i vidimo zadovoljala li model sve pretpostavke.
+Sada je vrijeme da vidimo zadovoljala li model sve pretpostavke.
 
 Provjeravamo homogenost varijanci. Kako bi vrijedila ta pretpostavka, trebamo dobiti što bolju moguću horizontalnu liniju. 
 
 ```{r}
 plot(reg, 3)
 ```
-Horizontalna linija je dobar znak da homogenost varijance vrijedi. Svejedno idemo testirati pomoću ncvTesta (Non-Constant Error Variance Test) čija je nul hipoteza da su varijance konstantne.
+Horizontalna linija je dobar znak da homogenost varijance vrijedi.
 
-```{r}
-ncvTest(reg)
-```
-Model prolazi test na razini značajnosti 0.05.
-
-Dalje testiramo nezavisnost pomoću Durbin-Watson testa.
-
-```{r}
-durbinWatsonTest(reg)
-```
-Na razini značajnosti od 0.05, ne možemo odbaciti nul-hipotezu koja je da su reziduali nezavisni.
-
-Dalje gledamo normalnost reziduala.
-
+Dalje nas zanima normalnost reziduala.
 ```{r}
 plot(reg, 2)
 ```
-Reziduali ne prate najbolje liniju koju trebaju, pa radimo test.
+Reziduali ne prate najbolje liniju koju trebaju pa možemo pretpostaviti da reziduali nisu normalno distribuirani. To znači da naš model ne bi davao pouzdane rezultate kada bismo ga koristili za predikciju vrijednosti.
+
+Zadnje što provjeravamo je nezavisnost tako da ćemo grafički prikazati standardizirane reziduale u ovisnosti na fittanu vrijednost.
 
 ```{r}
-sresid <- studres(reg) 
-shapiro.test(sresid)
+plot(reg, 1)
 ```
-Na razini značnajnosti od 0.05 odbacujemo nul hipotezu da su reziduali normalno distribuirani.
 
+Vidimo da su reziduali uglavnom u intervalu od -1 do 1. Također primjećujemo da su rezidualni nasumično smješten što je dobar znak za nezavisnost.
 
 
 ### Kategorija Assault Homicide
