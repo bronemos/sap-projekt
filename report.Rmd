@@ -85,7 +85,7 @@ rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
 Razlog ovakvog izgleda histograma je činjenica da sve kriminalne radnje promatramo zajedno, kasnije ćemo vidjeti da uzimanjem određenog tipa kriminala dolazimo do drukčijeg izgleda aktivnosti tokom dana.\
 
 
-Izdvojimo sad broj kriminalnih djela u 3 različita doba dana: noć koja traje od 22h do 6h, jutro koje traje od 6h do 14h i podne koje smo uzeli da traje od 14h do 22h.
+Izdvojimo sad broj kriminalnih djela u 3 različita doba dana: noć koja traje od 22h do 6h, jutro koje traje od 6h do 14h i popodne koje smo uzeli da traje od 14h do 22h.
 ```{r}
 day_parts<-ifelse(hours>=22|hours<6,rr2<-3,
                      ifelse(hours>=6&hours<14,rr2<-1,
@@ -623,9 +623,10 @@ plot(regression_4, 1)
 ```{r}
 plot(regression_4, 3)
 ```
-NCV testom provjerimo jesu li varijance homogene.
+Breusch-Paganovim testom možemo provjeriti homoskedastičnost reziduala.
+
 ```{r}
-ncvTest(regression_4)
+bptest(regression_4)
 ```
 Obzirom na činjenicu da linija u grafu iznad nije horizontalna i bilo je za očekivati da varijance nisu homogene.\
 Primijenimo sqrt transformaciju na homicide varijablu.
@@ -643,12 +644,43 @@ Promotrimo sada graf sa standardiziranim rezidualima:
 ```{r}
 plot(regression_4_sqrt, 3)
 ```
-Vidimo da se pravac znatno izravnao u usporedbi s modelom
+Vidimo da se pravac znatno izravnao u usporedbi s modelom. \
+Pokažimo to i testom.
+
+```{r}
+bptest(regression_4_sqrt)
+```
+Test sada prolazi na razini značajnosti 0.05.
+
+Durbin-Watsonovim testom možemo provjeriti postoji li koreliranost između reziduala.
+```{r}
+durbinWatsonTest(regression_4_sqrt)
+```
+Test nam potvrđuje da nema koreliranosti između reziduala što je poželjan ishod kod regresijskih modela. \
+Također zanimljivo je promotriti Residuals vs Leverage graf koji nam govori koliko će promjena određenih reziduala utjecati na regresijski pravac. \
+Bitna stavka ovog grafa je Cook's distance - podaci izvan područja označenog isprekidanom linijom imaju najjači utjecaj na regresijski pravac te njihovo micanje značajno utječe na ishod regresijskog modela. Za naš model vidimo da nemamo takvih podataka.
+```{r}
+plot(regression_4_sqrt, 5)
+```
+Promotrimo sada QQ plot. Vidimo da reziduali poprilično dobro slijede pravac što bi sugeriralo njihovu normalnost.
 
 ```{r}
 plot(regression_4_sqrt, 2)
-durbinWatsonTest(regression_4_sqrt)
 ```
+Prethodnu pretpostavku možemo provjeriti Kolmogorov-Smirnovljevim testom.
 
 ```{r}
+ks.test(rstandard(regression_4_sqrt), 'pnorm')
+```
+Test nam govori da su reziduali normalni. \
+Kao dodatnu provjeru možemo provesti i Lillieforseovu inačicu testa.
+```{r}
+require(nortest)
+lillie.test(rstandard(regression_4_sqrt))
+```
+Vidimo da Lillieforseov test ne prolazi, to se događa jer je on nešto stroži i precizniji od KS testa. \
+Promotrimo li histogram reziduala vidimo da oni donekle oponašaju izgled normalne razdiobe.
+```{r}
+hist((regression_4_sqrt$residuals),
+     col = 'light blue')
 ```
