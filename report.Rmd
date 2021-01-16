@@ -1,5 +1,5 @@
 ---
-title: "**Analiza kriminala i socio-ekonomskih faktora**"
+title: '**Analiza kriminala i socio-ekonomskih faktora**'
 author:
 - Jan Grgić
 - Bernard Spiegl
@@ -7,9 +7,9 @@ author:
 - Dunja Šmigovec
 output:
   pdf_document: default
-header-includes:
-  \usepackage{float}
-  \floatplacement{figure}{H}
+  html_document:
+    df_print: paged
+header-includes: \usepackage{float} \floatplacement{figure}{H}
 ---
 
 ```{r setup, include=FALSE}
