@@ -64,7 +64,7 @@ table(hours)
 
 ## Podaci o učestalosti kriminala ovisno o dobu dana
 
-Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (Figure \ref{fig:frequency_hist}).\
+Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (Figure \ref{fig:frequency_hist1}).\
 Inicijalna pretpostavka većine je vjerojatno da su kriminalne aktivnosti najfrekventnije u noćnim satima, ali histogram nam pokazuje drukčije.
 
 ```{r frequency_hist1, fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata", out.width='0.9\\linewidth'}
@@ -218,21 +218,25 @@ legend("bottomright", c("Theft", "Homicide"), fill = c(rgb(1, 0, 0, 0.5), rgb(0,
 
 ## Učestalost krađa i kriminala vezanih uz narkotike
 
+Dijagram (Figure \ref{fig:category_frequencies}) prikazuje učestalost različitih kategorija zločina unazad godinu dana. Najveću učestalost prema grafu ima kategorija krađe "THEFT", dok je kategorija "NARCOTICS" tek na 9. mjestu. Uz kategoriju krađe osim "THEFT" dodali smo "BURGLARY" i "ROBBERY" jer im je cilj krađa. Možemo reći da su specijalizacija krađe. HI kvadrat testom o jednoj proporciji provjeravamo je li razlika učestalosti krađa i kriminala vezanih uz narkotike statistički signifikantna, odnosno je li učestalost krađa doista veća od učestalosti kriminala vezanih za narkotike. Pretpostavit ćemo da se radi o normalnoj distribuciji.
+
+Testiramo hipotezu H0: udio krađa je 0.5, nasuprot alternativi H1: udio krađa je veći od 0.5. Za razinu značajnosti alpha uzeli smo 0.05. 
+
 ```{r theft_narcotics, warning=FALSE, fig.cap = "Učestalost krađa i kriminala vezanih uz narkotike", out.width='0.9\\linewidth'}
 
 theft_crimes <- c("THEFT", "ROBBERY", "BURGLARY")
 theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION %in% theft_crimes,]
 narcotic_crimes <- c("NARCOTICS", "OTHER NARCOTIC VIOLATION")
 all_narocitcs <- chicago_year[chicago_year$PRIMARY.DESCRIPTION %in% narcotic_crimes,]
-x <- nrow(theft)
-n <- nrow(theft) + nrow(all_narocitcs)
-x
-res <- prop.test(x, n, p = 0.5, correct = FALSE,
+x <- nrow(theft) # broj krađa
+n <- nrow(theft) + nrow(all_narocitcs) # veličina uzorka
+
+res <- prop.test(x, n, p = 0.5, correct = TRUE,
               alternative = "greater")
 
 res
 ```
-p-vrijednost manja od 0.05, odbacujemo H0 u prilog H1
+Dobili smo p-vrijednost 2.2e-16, koja je puno manja od alpha = 0.05, iz tog razloga odbacujemo H0 u korist H1 te zaključujemo da su krađe doista učestalije. U prilog ovom zaključku ide i procjena vjerojatnosti krađe koja je 0.8836476 i nalazi se u 95%-tnom intervalu povjerenja 0.8816474 < 0.8836476 < 1.0000000.
 
 ## Odnos stope ubojstava i BDP per Capita
 Promatranjem odnosa stope ubojstava i BDP per Capita (Figure \ref{fig:homicide_gdp}) uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
