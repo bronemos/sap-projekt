@@ -64,7 +64,7 @@ table(hours)
 
 ## Podaci o učestalosti kriminala ovisno o dobu dana
 
-Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (Figure \ref{fig:frequency_hist}).\
+Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (Figure \ref{fig:frequency_hist1}).\
 Inicijalna pretpostavka većine je vjerojatno da su kriminalne aktivnosti najfrekventnije u noćnim satima, ali histogram nam pokazuje drukčije.
 
 ```{r frequency_hist1, fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata", out.width='0.9\\linewidth'}
@@ -85,7 +85,7 @@ rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
 Razlog ovakvog izgleda histograma je činjenica da sve kriminalne radnje promatramo zajedno, kasnije ćemo vidjeti da uzimanjem određenog tipa kriminala dolazimo do drukčijeg izgleda aktivnosti tokom dana.\
 
 
-Izdvojimo sad broj kriminalnih djela u 3 različita doba dana: noć koja traje od 22h do 6h, jutro koje traje od 6h do 14h i podne koje smo uzeli da traje od 14h do 22h.
+Izdvojimo sad broj kriminalnih djela u 3 različita doba dana: noć koja traje od 22h do 6h, jutro koje traje od 6h do 14h i popodne koje smo uzeli da traje od 14h do 22h.
 ```{r}
 day_parts<-ifelse(hours>=22|hours<6,rr2<-3,
                      ifelse(hours>=6&hours<14,rr2<-1,
@@ -218,21 +218,25 @@ legend("bottomright", c("Theft", "Homicide"), fill = c(rgb(1, 0, 0, 0.5), rgb(0,
 
 ## Učestalost krađa i kriminala vezanih uz narkotike
 
+Dijagram (Figure \ref{fig:category_frequencies}) prikazuje učestalost različitih kategorija zločina unazad godinu dana. Najveću učestalost prema grafu ima kategorija krađe "THEFT", dok je kategorija "NARCOTICS" tek na 9. mjestu. Uz kategoriju krađe osim "THEFT" dodali smo "BURGLARY" i "ROBBERY" jer im je cilj krađa. Možemo reći da su specijalizacija krađe. HI kvadrat testom o jednoj proporciji provjeravamo je li razlika učestalosti krađa i kriminala vezanih uz narkotike statistički signifikantna, odnosno je li učestalost krađa doista veća od učestalosti kriminala vezanih za narkotike. Pretpostavit ćemo da se radi o normalnoj distribuciji.
+
+Testiramo hipotezu H0: udio krađa je 0.5, nasuprot alternativi H1: udio krađa je veći od 0.5. Za razinu značajnosti alpha uzeli smo 0.05. 
+
 ```{r theft_narcotics, warning=FALSE, fig.cap = "Učestalost krađa i kriminala vezanih uz narkotike", out.width='0.9\\linewidth'}
 
 theft_crimes <- c("THEFT", "ROBBERY", "BURGLARY")
 theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION %in% theft_crimes,]
 narcotic_crimes <- c("NARCOTICS", "OTHER NARCOTIC VIOLATION")
 all_narocitcs <- chicago_year[chicago_year$PRIMARY.DESCRIPTION %in% narcotic_crimes,]
-x <- nrow(theft)
-n <- nrow(theft) + nrow(all_narocitcs)
-x
-res <- prop.test(x, n, p = 0.5, correct = FALSE,
+x <- nrow(theft) # broj krađa
+n <- nrow(theft) + nrow(all_narocitcs) # veličina uzorka
+
+res <- prop.test(x, n, p = 0.5, correct = TRUE,
               alternative = "greater")
 
 res
 ```
-p-vrijednost manja od 0.05, odbacujemo H0 u prilog H1
+Dobili smo p-vrijednost 2.2e-16, koja je puno manja od alpha = 0.05, iz tog razloga odbacujemo H0 u korist H1 te zaključujemo da su krađe doista učestalije. U prilog ovom zaključku ide i procjena vjerojatnosti krađe koja je 0.8836476 i nalazi se u 95%-tnom intervalu povjerenja 0.8816474 < 0.8836476 < 1.0000000.
 
 ## Odnos stope ubojstava i BDP per Capita
 Promatranjem odnosa stope ubojstava i BDP per Capita (Figure \ref{fig:homicide_gdp}) uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
@@ -619,9 +623,10 @@ plot(regression_4, 1)
 ```{r}
 plot(regression_4, 3)
 ```
-NCV testom provjerimo jesu li varijance homogene.
+Breusch-Paganovim testom možemo provjeriti homoskedastičnost reziduala.
+
 ```{r}
-ncvTest(regression_4)
+bptest(regression_4)
 ```
 Obzirom na činjenicu da linija u grafu iznad nije horizontalna i bilo je za očekivati da varijance nisu homogene.\
 Primijenimo sqrt transformaciju na homicide varijablu.
@@ -639,12 +644,43 @@ Promotrimo sada graf sa standardiziranim rezidualima:
 ```{r}
 plot(regression_4_sqrt, 3)
 ```
-Vidimo da se pravac znatno izravnao u usporedbi s modelom
+Vidimo da se pravac znatno izravnao u usporedbi s modelom. \
+Pokažimo to i testom.
+
+```{r}
+bptest(regression_4_sqrt)
+```
+Test sada prolazi na razini značajnosti 0.05.
+
+Durbin-Watsonovim testom možemo provjeriti postoji li koreliranost između reziduala.
+```{r}
+durbinWatsonTest(regression_4_sqrt)
+```
+Test nam potvrđuje da nema koreliranosti između reziduala što je poželjan ishod kod regresijskih modela. \
+Također zanimljivo je promotriti Residuals vs Leverage graf koji nam govori koliko će promjena određenih reziduala utjecati na regresijski pravac. \
+Bitna stavka ovog grafa je Cook's distance - podaci izvan područja označenog isprekidanom linijom imaju najjači utjecaj na regresijski pravac te njihovo micanje značajno utječe na ishod regresijskog modela. Za naš model vidimo da nemamo takvih podataka.
+```{r}
+plot(regression_4_sqrt, 5)
+```
+Promotrimo sada QQ plot. Vidimo da reziduali poprilično dobro slijede pravac što bi sugeriralo njihovu normalnost.
 
 ```{r}
 plot(regression_4_sqrt, 2)
-durbinWatsonTest(regression_4_sqrt)
 ```
+Prethodnu pretpostavku možemo provjeriti Kolmogorov-Smirnovljevim testom.
 
 ```{r}
+ks.test(rstandard(regression_4_sqrt), 'pnorm')
+```
+Test nam govori da su reziduali normalni. \
+Kao dodatnu provjeru možemo provesti i Lillieforseovu inačicu testa.
+```{r}
+require(nortest)
+lillie.test(rstandard(regression_4_sqrt))
+```
+Vidimo da Lillieforseov test ne prolazi, to se događa jer je on nešto stroži i precizniji od KS testa. \
+Promotrimo li histogram reziduala vidimo da oni donekle oponašaju izgled normalne razdiobe.
+```{r}
+hist((regression_4_sqrt$residuals),
+     col = 'light blue')
 ```
