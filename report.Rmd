@@ -203,7 +203,7 @@ axis(side = 1,
 Iz histograma distribucija izgleda donekle uniformno. Vidimo ponešto manje brojke u ožujku i travnju. Opat ćemo iskoristiti HI kvadrat test da provjerimo uniformnost ove distribucije.
 Testirajmo hipotezu H0 jesu li kriminalna djela jednako distribuirana po svim mjesecima, uz hipotezu H1 da nisu jednako distribuirana uz razinu značajnosti alpha = 0.05.
 
-```{r chi squared test}
+```{r}
 res<-chisq.test(as.integer(table(months)), p = c(rep(1/12, each=12)))
 res
 ```
@@ -223,8 +223,7 @@ months_filtered<-ifelse(months==1,rr2<-1,
                             rr2<-NA))))))))))
 table_months <- table(months_filtered)
 table_months
-```
-```{r chi squared test}
+
 res<-chisq.test(as.integer(table_months), p = c(rep(1/10, each=10)))
 res
 ```
