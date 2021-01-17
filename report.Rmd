@@ -40,86 +40,6 @@ dim(chicago_pc)
 dim(chicago_year)
 ```
 
-## Učitavanje podataka o vremenu
-
-```{r}
-#dohvaća listu datuma
-dates <-
-  strptime(c(chicago_year$DATE..OF.OCCURRENCE),
-           format = "%m/%d/%Y %H:%M:%S %p",
-           tz = "America/Chicago")
-
-#dohvaća listu sati
-hours <-
-  as.numeric(format(
-    strptime(
-      chicago_year$DATE..OF.OCCURRENCE,
-      format = "%m/%d/%Y %I:%M:%S %p",
-      tz = "America/Chicago"
-    ),
-    format = "%H"
-  ))
-table(hours)
-```
-
-## Podaci o učestalosti kriminala ovisno o dobu dana
-
-Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (Figure \ref{fig:frequency_hist1}).\
-Inicijalna pretpostavka većine je vjerojatno da su kriminalne aktivnosti najfrekventnije u noćnim satima, ali histogram nam pokazuje drukčije.
-
-```{r frequency_hist1, fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata", out.width='0.9\\linewidth'}
-hist(
-  hours + 1,
-  breaks = 0:24,
-  main = "Frequency of criminal activities in 24 hours",
-  xlab = "Hour",
-  ylab = "Frequency",
-  col = "light blue",
-  xaxt = "n"
-)
-axis(side = 1,
-     at = seq(0, 24, 2),
-     tick = T)
-rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
-```
-Razlog ovakvog izgleda histograma je činjenica da sve kriminalne radnje promatramo zajedno, kasnije ćemo vidjeti da uzimanjem određenog tipa kriminala dolazimo do drukčijeg izgleda aktivnosti tokom dana.\
-
-
-Izdvojimo sad broj kriminalnih djela u 3 različita doba dana: noć koja traje od 22h do 6h, jutro koje traje od 6h do 14h i popodne koje smo uzeli da traje od 14h do 22h.
-```{r}
-day_parts<-ifelse(hours>=22|hours<6,rr2<-3,
-                     ifelse(hours>=6&hours<14,rr2<-1,
-                            rr2<-2))
-mytable<-table(day_parts)
-print(mytable)
-```
-
-Nakon što smo izdvojili podatke, možemo nacrtati histogram po dijelovima dana.
-
-```{r frequency_hist_day, fig.cap = "Frekventnost kriminalnih radnji po dijelovima dana", out.width='0.9\\linewidth'}
-hist(
-  day_parts,
-  breaks = 0:3,
-  main = "Frequency of criminal activities for day parts",
-  xlab = "Day part",
-  ylab = "Frequency",
-  col = "light blue",
-  xaxt = "n"
-)
-axis(side = 1,
-     at = seq(0.5, 3, 1),
-     labels = c("morning", "afternoon", "night")
-     )
-```
-Iz histograma je očito da se najviše kriminalnih djela događa između 14 i 22h. Sada HI kvadrat testom možemo provjeriti uniformnost ove distribucije, odnosno vidjeti je li ta razlika statistički značajna ili nije. Pretpostavit ćemo da je distribucija uniformna.
-Testirajmo hipotezu H0 jesu li kriminalna djela jednako distribuirana po svim djelovima dana, uz hipotezu H1 da nisu jednako distribuirana uz razinu značajnosti alpha = 0.05.
-
-```{r chi squared test}
-res<-chisq.test(as.integer(table(day_parts)), p = c(1/3, 1/3, 1/3))
-res
-```
-S obzirom da je p-value < 2.2e-16 izrazito manja od alpha = 0.05, odbacujemo H0 u korist H1 te bismo mogli zaključiti da ova distribucija nije uniformna, odnosno da broj kriminalnih djela nije isti u svakom dobu dana. Naravno, treba pripaziti i na veličinu podataka. S obzirom na velik broj podataka, može se dogoditi da se odbaci H0 u korist H1 kad to nije trebalo napraviti, ali s obzirom na izgled dijagrama, slažemo se s odbacivanjem H0 u korist H1.
-
 ## Kategorije kriminala u datasetu
 ```{r}
 categories <- unique(chicago_year$PRIMARY.DESCRIPTION)
@@ -167,54 +87,83 @@ barplot(
 
 
 ```
+## Učitavanje podataka o vremenu
 
-## Prikaz relativnog odnosa količine ubojstava i krađa u periodu od 24 sata
+```{r}
+#dohvaća listu datuma
+dates <-
+  strptime(c(chicago_year$DATE..OF.OCCURRENCE),
+           format = "%m/%d/%Y %H:%M:%S %p",
+           tz = "America/Chicago")
 
-U nastavku možemo vidjeti graf koji prikazuje relativan odnos frekventnosti krađa i ubojstava u periodu od 24 sata (Figure \ref{fig:homicide_theft}).\
-S obzirom da su podaci skalirani radi se isključivo o relativnom prikazu.\
-Uočljivo je da se ubojstva češće događaju u kasnijim satima i tokom noći dok su krađe češće sredinom dana.
-```{r homicide_theft, warning=FALSE, fig.cap = "Prikaz relativnog odnosa količine ubojstava i krađa u periodu od 24 sata", out.width='0.9\\linewidth'}
-theft <- chicago_year[chicago_year$PRIMARY.DESCRIPTION == "THEFT",]
-theft_hours <-
-  scale(table(as.numeric(format(
-    strptime(theft$DATE..OF.OCCURRENCE, format = "%m/%d/%Y %I:%M:%S %p", tz =
-               "America/Chicago"),
-    format = "%H"
-  ))))
-
-
-homicide <-
-  chicago_year[chicago_year$PRIMARY.DESCRIPTION == "HOMICIDE",]
-homicide_hours <-
-  scale(table(as.numeric(format(
+#dohvaća listu sati
+hours <-
+  as.numeric(format(
     strptime(
-      homicide$DATE..OF.OCCURRENCE,
+      chicago_year$DATE..OF.OCCURRENCE,
       format = "%m/%d/%Y %I:%M:%S %p",
       tz = "America/Chicago"
     ),
     format = "%H"
-  ))))
-
-
-plot(
-  homicide_hours,
-  type = "l",
-  main = "Comparison of relative frequencies of homicide and theft in 24 hours",
-  xlab = "Hour",
-  ylab = "Frequency",
-  xaxt = "n",
-  yaxt = "n"
-)
-lines(theft_hours, col = "red")
-lines(homicide_hours, col = "blue")
-axis(side = 1,
-     at = seq(1, 23, 2),
-     tick = T)
-rug(seq(0, 24, 2), ticksize = -0.03, side = 1)
-legend("bottomright", c("Theft", "Homicide"), fill = c(rgb(1, 0, 0, 0.5), rgb(0, 0, 1, 0.5)))
-
+  ))
+table(hours)
 ```
 
+## Podaci o učestalosti kriminala ovisno o dobu dana
+
+Promotrimo najprije ovisnost frekventnosti kriminalnih aktivnosti o trenutku u danu (Figure \ref{fig:frequency_hist1}).\
+Inicijalna pretpostavka većine je vjerojatno da su kriminalne aktivnosti najfrekventnije u noćnim satima, ali histogram nam pokazuje drukčije.
+
+```{r frequency_hist1, fig.cap = "Frekventnost kriminalnih radnji u periodu od 24 sata", out.width='0.9\\linewidth'}
+hist(
+  hours + 1,
+  breaks = 0:24,
+  main = "Frequency of criminal activities in 24 hours",
+  xlab = "Hour",
+  ylab = "Frequency",
+  col = "light blue",
+  xaxt = "n"
+)
+axis(side = 1,
+     at = seq(0, 24, 2),
+     tick = T)
+rug(seq(1, 23, 2), ticksize = -0.03, side = 1)
+```
+
+Izdvojimo sad broj kriminalnih djela u 3 različita doba dana: noć koja traje od 22h do 6h, jutro koje traje od 6h do 14h i popodne koje smo uzeli da traje od 14h do 22h.
+```{r}
+day_parts<-ifelse(hours>=22|hours<6,rr2<-3,
+                     ifelse(hours>=6&hours<14,rr2<-1,
+                            rr2<-2))
+mytable<-table(day_parts)
+print(mytable)
+```
+
+Nakon što smo izdvojili podatke, možemo nacrtati histogram po dijelovima dana.
+
+```{r frequency_hist_day, fig.cap = "Frekventnost kriminalnih radnji po dijelovima dana", out.width='0.9\\linewidth'}
+hist(
+  day_parts,
+  breaks = 0:3,
+  main = "Frequency of criminal activities for different parts of the day",
+  xlab = "Day part",
+  ylab = "Frequency",
+  col = "light blue",
+  xaxt = "n"
+)
+axis(side = 1,
+     at = seq(0.5, 3, 1),
+     labels = c("morning", "afternoon", "night")
+     )
+```
+Iz histograma je očito da se najviše kriminalnih djela događa između 14 i 22h. Sada HI kvadrat testom možemo provjeriti uniformnost ove distribucije, odnosno vidjeti je li ta razlika statistički značajna ili nije. Pretpostavit ćemo da je distribucija uniformna.
+Testirajmo hipotezu H0 jesu li kriminalna djela jednako distribuirana po svim djelovima dana, uz hipotezu H1 da nisu jednako distribuirana uz razinu značajnosti alpha = 0.05.
+
+```{r chi squared test}
+res<-chisq.test(as.integer(table(day_parts)), p = c(1/3, 1/3, 1/3))
+res
+```
+S obzirom da je p-value < 2.2e-16 izrazito manja od alpha = 0.05, odbacujemo H0 u korist H1 te bismo mogli zaključiti da ova distribucija nije uniformna, odnosno da broj kriminalnih djela nije isti u svakom dobu dana. Naravno, treba pripaziti i na veličinu podataka. S obzirom na velik broj podataka, može se dogoditi da se odbaci H0 u korist H1 kad to nije trebalo napraviti, ali s obzirom na izgled dijagrama, slažemo se s odbacivanjem H0 u korist H1.
 
 ## Učestalost krađa i kriminala vezanih uz narkotike
 
@@ -237,20 +186,6 @@ res <- prop.test(x, n, p = 0.5, correct = TRUE,
 res
 ```
 Dobili smo p-vrijednost 2.2e-16, koja je puno manja od alpha = 0.05, iz tog razloga odbacujemo H0 u korist H1 te zaključujemo da su krađe doista učestalije. U prilog ovom zaključku ide i procjena vjerojatnosti krađe koja je 0.8836476 i nalazi se u 95%-tnom intervalu povjerenja 0.8816474 < 0.8836476 < 1.0000000.
-
-## Odnos stope ubojstava i BDP per Capita
-Promatranjem odnosa stope ubojstava i BDP per Capita (Figure \ref{fig:homicide_gdp}) uočavamo da su stope ubojstava znatno veće u područjima nižeg BDP per Capita.\
-Jedan od razloga takvog trenda može biti raslojenost populacije po kvartovima, pa tako bogatiji dio populacije živi u sigurnijim kvartovima sa manje kriminala.
-```{r homicide_gdp, fig.cap = "Odnos stope ubojstava i BDP per Capita", out.width='0.9\\linewidth'}
-homicide_gdp <-
-  data.frame(x = chicago_pc$Per.Capita.Income,
-             y = chicago_pc$Assault..Homicide.)
-plot(homicide_gdp,
-     main = "Homicide rate in relation to GDP per capita",
-     xlab = "GDP per capita (US$)",
-     ylab = "Homicide rate (n/100 000)")
-```
-## Odnos stope krađa i BDP per capita msm da je nespojivo, krade imamo samo u chicago_year, a tamo ne znamo BDP
 
 ## Pad kriminala vezan uz koronavirus
 Sljedeći graf prikazuje fascinantu činjenicu o smanjenju broja kriminalnih djela nakon početka pandemije koronavirusa i lockdowna. Prikaz je informativan te nećemo ulaziti u detaljniju analizu.
@@ -337,7 +272,7 @@ reg1 <- lm(crowded.housing  ~ no.high.school.diploma, chicago_pc)
 summary(reg1)
 
 ```
-```{r regression1, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
+```{r regression1, fig.cap = "Prikaz linearne regresije (Crowded Housing)", out.width='0.9\\linewidth'}
 plot(
   no.high.school.diploma,
   crowded.housing ,
@@ -349,18 +284,6 @@ plot(
 )
 abline(lm(crowded.housing  ~ no.high.school.diploma), col = "pink", lwd = 2)
 ```
-Probat ćemo dodati i Per.Capita.Income u ovu priču i pogledati kako se model ponaša u toj situaciji.
-
-```{r}
-per.capita.income <- as.matrix(chicago_pc[9]) #Per.Capita.Income
-
-reg2 <-
-  lm(crowded.housing ~ no.high.school.diploma + per.capita.income,
-     chicago_pc)
-
-summary(reg2)
-```
-Vidimo da smo dobili nešto bolji model. Smanjili smo std. error svih koeficijenata, povećali smo značajnost koeficijenta b0 i povećali smo koeficijent determinacije. 
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
 
@@ -384,7 +307,7 @@ reg <- lm(firearm.related ~ unemployment, chicago_pc)
 summary(reg)
 ```
 
-```{r regression2, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
+```{r regression2, fig.cap = "Prikaz linearne regresije (Firearm)", out.width='0.9\\linewidth'}
 plot(
   unemployment,
   firearm.related,
@@ -409,7 +332,7 @@ summary(reg)
 Ako primijenimo logaritamsku transformaciju, koeficijent b0 postaje jako značajan, a i koeficijent determinacije se povećao, te F-test daje puno bolje rezultate. 
 
 
-```{r regression, fig.cap = "Prikaz linearne regresije", out.width='0.9\\linewidth'}
+```{r regression, fig.cap = "Prikaz linearne regresije (Firearm)", out.width='0.9\\linewidth'}
 plot(
   log(unemployment),
   firearm.related,
@@ -468,7 +391,7 @@ Tražimo postoji li još kakva varijabla koja bi mogla pridonjeti modelu.
 
 Ako vizualiziramo parove Per.Capita.Income, Firearm.related možemo uočiti pravilnost. U siromašnijim kvartovima, kriminal koji uključuje vatreno oružje je puno češće nego u bogatijim kvartovima. Štoviše, uočavamo eksponencijalni pad pa ćemo primijeniti transformaciju podataka nad tom varijablom.
  
-```{r}
+```{r fig.cap = "Odnos oružanih kriminala i GDP per capita", out.width='0.9\\linewidth'}
 plot(
   chicago_pc$Per.Capita.Income,
   firearm.related,
@@ -501,25 +424,29 @@ Sada je vrijeme da vidimo zadovoljala li model sve pretpostavke.
 
 Provjeravamo homogenost varijanci. Kako bi vrijedila ta pretpostavka, trebamo dobiti što bolju moguću horizontalnu liniju. 
 
-```{r}
+```{r fig.cap = "Prikaz standardiziranih reziduala", out.width='0.9\\linewidth'}
 plot(reg, 3)
 ```
 Horizontalna linija je dobar znak da homogenost varijance vrijedi.
 
 Dalje nas zanima normalnost reziduala.
-```{r}
+```{r fig.cap = "Q-Q Plot", out.width='0.9\\linewidth'}
 plot(reg, 2)
 ```
-Reziduali ne prate najbolje liniju koju trebaju pa možemo pretpostaviti da reziduali nisu normalno distribuirani. To znači da naš model ne bi davao pouzdane rezultate kada bismo ga koristili za predikciju vrijednosti.
-
-Zadnje što provjeravamo je nezavisnost tako da ćemo grafički prikazati standardizirane reziduale u ovisnosti na fittanu vrijednost.
+Reziduali ne prate najbolje liniju koju trebaju pa možemo pretpostaviti da reziduali nisu normalno distribuirani. To znači da naš model ne bi davao pouzdane rezultate kada bismo ga koristili za predikciju vrijednosti.\
+Našu pretpostavku možemo još provjeriti Kolmogorov-Smirnovljevim testom.
 
 ```{r}
-plot(reg, 1)
+ks.test(rstandard(reg), 'pnorm')
 ```
+Vidimo da model pada na KS testu te zaključujemo da reziduali nisu normalno distribuirani.\
 
-Vidimo da su reziduali uglavnom u intervalu od -1 do 1. Također primjećujemo da su rezidualni nasumično smješten što je dobar znak za nezavisnost.
+Zadnje što provjeravamo je nezavisnost pomoću Durbin-Watsonovog testa.
 
+```{r}
+dwtest(reg)
+```
+Vidimo da reziduali nisu autokorelirani što znači da su nezavisni.
 
 ### Kategorija Assault Homicide
 
@@ -557,7 +484,7 @@ Usporedbom rezultata uočavamo da je sqrt transformacija prikladnija u ovoj situ
 Općenito sqrt transformacija je pogodna pri manjim zakrivljenostima dok log daje bolje rezultate ako je zakrivljenost izraženija.  
 Vizualizirajmo dobivenu regresiju.
 
-```{r}
+```{r fig.cap = "Prikaz linearne regresije (Homicide)", out.width='0.9\\linewidth'}
 plot(
   sqrt(unemployment),
   homicide,
@@ -617,10 +544,8 @@ regression_4 <-
 
 summary(regression_4)
 ```
-```{r}
-plot(regression_4, 1)
-```
-```{r}
+
+```{r fig.cap = "Prikaz standardiziranih reziduala", out.width='0.9\\linewidth'}
 plot(regression_4, 3)
 ```
 Breusch-Paganovim testom možemo provjeriti homoskedastičnost reziduala.
@@ -641,7 +566,7 @@ regression_4_sqrt <-
 summary(regression_4_sqrt)
 ```
 Promotrimo sada graf sa standardiziranim rezidualima:
-```{r}
+```{r fig.cap = "Prikaz standardiziranih reziduala", out.width='0.9\\linewidth'}
 plot(regression_4_sqrt, 3)
 ```
 Vidimo da se pravac znatno izravnao u usporedbi s modelom. \
@@ -654,17 +579,12 @@ Test sada prolazi na razini značajnosti 0.05.
 
 Durbin-Watsonovim testom možemo provjeriti postoji li koreliranost između reziduala.
 ```{r}
-durbinWatsonTest(regression_4_sqrt)
+dwtest(regression_4_sqrt)
 ```
 Test nam potvrđuje da nema koreliranosti između reziduala što je poželjan ishod kod regresijskih modela. \
-Također zanimljivo je promotriti Residuals vs Leverage graf koji nam govori koliko će promjena određenih reziduala utjecati na regresijski pravac. \
-Bitna stavka ovog grafa je Cook's distance - podaci izvan područja označenog isprekidanom linijom imaju najjači utjecaj na regresijski pravac te njihovo micanje značajno utječe na ishod regresijskog modela. Za naš model vidimo da nemamo takvih podataka.
-```{r}
-plot(regression_4_sqrt, 5)
-```
 Promotrimo sada QQ plot. Vidimo da reziduali poprilično dobro slijede pravac što bi sugeriralo njihovu normalnost.
 
-```{r}
+```{r fig.cap = "Q-Q Plot", out.width='0.9\\linewidth'}
 plot(regression_4_sqrt, 2)
 ```
 Prethodnu pretpostavku možemo provjeriti Kolmogorov-Smirnovljevim testom.
@@ -680,7 +600,10 @@ lillie.test(rstandard(regression_4_sqrt))
 ```
 Vidimo da Lillieforseov test ne prolazi, to se događa jer je on nešto stroži i precizniji od KS testa. \
 Promotrimo li histogram reziduala vidimo da oni donekle oponašaju izgled normalne razdiobe.
-```{r}
+```{r fig.cap = "Histogram reziduala", out.width='0.9\\linewidth'}
 hist((regression_4_sqrt$residuals),
      col = 'light blue')
 ```
+
+## Zaključak
+
