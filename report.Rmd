@@ -200,10 +200,10 @@ axis(side = 1,
      labels = c(1:12)
      )
 ```
-Iz histograma distribucija izgleda donekle uniformno. Vidimo ponešto manje brojke u ožujku i travnju. Opat ćemo iskoristiti HI kvadrat test da provjerimo uniformnost ove distribucije.
+Iz histograma distribucija izgleda donekle uniformno. Vidimo ponešto manje brojke u ožujku i travnju. Opet ćemo iskoristiti HI kvadrat test da provjerimo uniformnost ove distribucije.
 Testirajmo hipotezu H0 jesu li kriminalna djela jednako distribuirana po svim mjesecima, uz hipotezu H1 da nisu jednako distribuirana uz razinu značajnosti alpha = 0.05.
 
-```{r chi squared test}
+```{r chi squared test 2}
 res<-chisq.test(as.integer(table(months)), p = c(rep(1/12, each=12)))
 res
 ```
@@ -224,7 +224,7 @@ months_filtered<-ifelse(months==1,rr2<-1,
 table_months <- table(months_filtered)
 table_months
 ```
-```{r chi squared test}
+```{r chi squared test 3}
 res<-chisq.test(as.integer(table_months), p = c(rep(1/10, each=10)))
 res
 ```
@@ -233,7 +233,7 @@ X-squared je sad pao za još 4 puta u odnosu na prošli test. Iako je p vrijedno
 
 ## Učestalost krađa i kriminala vezanih uz narkotike
 
-Dijagram (Figure \ref{fig:category_frequencies}) prikazuje učestalost različitih kategorija zločina unazad godinu dana. Najveću učestalost prema grafu ima kategorija krađe "THEFT", dok je kategorija "NARCOTICS" tek na 9. mjestu. Uz kategoriju krađe osim "THEFT" dodali smo "BURGLARY" i "ROBBERY" jer im je cilj krađa. Možemo reći da su specijalizacija krađe. HI kvadrat testom o jednoj proporciji provjeravamo je li razlika učestalosti krađa i kriminala vezanih uz narkotike statistički signifikantna, odnosno je li učestalost krađa doista veća od učestalosti kriminala vezanih za narkotike. Pretpostavit ćemo da se radi o normalnoj distribuciji.
+Dijagram (Figure \ref{fig:category_frequencies}) prikazuje učestalost različitih kategorija zločina unazad godinu dana. Najveću učestalost prema grafu ima kategorija krađe "THEFT", dok je kategorija "NARCOTICS" tek na 9. mjestu. Uz kategoriju krađe osim "THEFT" dodali smo "BURGLARY" i "ROBBERY" jer im je cilj krađa. Možemo reći da su specijalizacija krađe. Testom o jednoj proporciji provjeravamo je li razlika učestalosti krađa i kriminala vezanih uz narkotike statistički signifikantna, odnosno je li učestalost krađa doista veća od učestalosti kriminala vezanih za narkotike. Pretpostavit ćemo da se radi o normalnoj distribuciji.
 
 Testiramo hipotezu H0: udio krađa je 0.5, nasuprot alternativi H1: udio krađa je veći od 0.5. Za razinu značajnosti alpha uzeli smo 0.05. 
 
@@ -250,8 +250,54 @@ res <- prop.test(x, n, p = 0.5, correct = TRUE,
               alternative = "greater")
 
 res
+
 ```
+
 Dobili smo p-vrijednost 2.2e-16, koja je puno manja od alpha = 0.05, iz tog razloga odbacujemo H0 u korist H1 te zaključujemo da su krađe doista učestalije. U prilog ovom zaključku ide i procjena vjerojatnosti krađe koja je 0.8836476 i nalazi se u 95%-tnom intervalu povjerenja 0.8816474 < 0.8836476 < 1.0000000.
+
+## Podaci o ukradenoj vrijednosti
+
+Nakon što smo vidjeli da je krađa najčešći oblik kriminala, zanimala nas je vrijednost ukradenih stvari. Dijagram (Figure \ref{fig:theft_crimes_values}) pokazuje da je učestalost većih krađa (preko $500) manja. Ponovo ćemo testom o jednoj proporciji provjeriti je li to stvarno istina. 
+
+```{r theft_crimes_values, warning=FALSE, fig.cap = "Podaci o vrijednosti krađe", out.width='0.9\\linewidth'}
+
+
+secondary_theft_types <- c("$500 AND UNDER", "OVER $500")
+theft_secondary <- chicago_year[chicago_year$SECONDARY.DESCRIPTION %in% secondary_theft_types,]
+
+table <- table(theft_secondary$SECONDARY.DESCRIPTION)
+data <- as.data.frame.table(table)
+
+barplot(
+data$Freq,
+names.arg = data$Var1,
+cex.names = 0.6,
+col = "skyblue",
+ylim = range(pretty(c(0, data$Freq))),
+main = "Theft value"
+)
+```
+
+Testiramo hipotezu H0: udio krađa iznad \$500 je 0.5, nasuprot alternativi H1: udio krađa iznad \$500 je veći od 0.5. Za razinu značajnosti alpha uzeli smo 0.05.
+
+
+```{r theft_value2, warning=FALSE, fig.cap = "Učestalost krađa", out.width='0.9\\linewidth'}
+
+over500 <- c("OVER $500")
+
+theft_more <- chicago_year[chicago_year$SECONDARY.DESCRIPTION %in% over500,]
+
+x <- nrow(theft_more) # broj krađa većih od $500
+n <- nrow(theft_secondary) # veličina uzorka
+
+res <- prop.test(x, n, p = 0.5, correct = TRUE,
+              alternative = "less")
+
+res
+
+```
+Dobili smo p-vrijednost 2.2e-16, koja je znatno manja od alpha = 0.05, iz tog razloga odbacujemo H0 u korist H1 te zaključujemo da su krađe iznad \$500 manje učestale od krađa ispod \$500. Vjerojatnost krađe iznad $500 je 0.3745399. 
+
 
 ## Pad kriminala vezan uz koronavirus
 Sljedeći graf prikazuje fascinantu činjenicu o smanjenju broja kriminalnih djela nakon početka pandemije koronavirusa i lockdowna. Prikaz je informativan te nećemo ulaziti u detaljniju analizu.
