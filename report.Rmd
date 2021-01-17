@@ -353,7 +353,7 @@ abline(lm(crowded.housing  ~ no.high.school.diploma), col = "pink", lwd = 2)
 
 ## Veze između socio-ekonomskih faktora i kategorije kriminala
 
-### Kategorija Firearm related
+## Kategorija Firearm related
 
 Kategorija kriminala koju najprije promatramo je Firearm.related. Prvo ćemo napraviti korelacijsku matricu da dobijemo dojam kako se brojke kreću i od kojih varijabli bismo mogli krenuti raditi regresijski model.
 
@@ -491,13 +491,18 @@ Sada je vrijeme da vidimo zadovoljala li model sve pretpostavke.
 Provjeravamo homogenost varijanci. Kako bi vrijedila ta pretpostavka, trebamo dobiti što bolju moguću horizontalnu liniju. 
 
 ```{r fig.cap = "Prikaz standardiziranih reziduala", out.width='0.9\\linewidth'}
-plot(reg, 3)
+plot(reg, 3, col="lightgreen", pch=16)
 ```
-Horizontalna linija je dobar znak da homogenost varijance vrijedi.
+Horizontalna linija je dobar znak da homogenost varijance vrijedi. \
+Provjerimo sada to i testom.
 
+```{r}
+bptest(reg)
+```
+Test prolazi na razini značajnosti od 0.05.\
 Dalje nas zanima normalnost reziduala.
 ```{r fig.cap = "Q-Q Plot", out.width='0.9\\linewidth'}
-plot(reg, 2)
+plot(reg, 2, col ="lightgreen", pch=16)
 ```
 Reziduali ne prate najbolje liniju koju trebaju pa možemo pretpostaviti da reziduali nisu normalno distribuirani. To znači da naš model ne bi davao pouzdane rezultate kada bismo ga koristili za predikciju vrijednosti.\
 Našu pretpostavku možemo još provjeriti Kolmogorov-Smirnovljevim testom.
@@ -514,9 +519,11 @@ dwtest(reg)
 ```
 Vidimo da reziduali nisu autokorelirani što znači da su nezavisni.
 
+### Zaključak
+
 Na kraju zaključujemo da na kriminal koji uključuje vatreno oružje utječe nezaposlenost, manjak više edukacije i GDP doprinos kvarta. Rezultati koji smo dobili nisu ništa neobičajni već konzistentni s onime što bi povezali s kriminalom. Loše socio-ekonomske prilike stvaraju atmosferu za kriminal.
 
-### Kategorija Assault Homicide
+## Kategorija Assault Homicide
 
 Promotrimo sada kategoriju Assault Homicide i njezinu korelaciju s drugim faktorima. 
 
@@ -531,13 +538,10 @@ Kao i kod kriminala vezanih za vatrena oružja vidimo jaku korelaciju s nezaposl
 ```{r}
 unemployment <- as.matrix(chicago_pc[10])
 homicide <- as.matrix(chicago_pc[3])
-cat('Mean:', mean(unemployment), '\n')
-cat('Median: ', median(unemployment))
 regression <- lm(homicide ~ unemployment, chicago_pc)
 
 summary(regression)
 ```
-S obzirom da je srednja vrijednost veća od medijana zaključujemo da se radi o pozitivno zakrivljenoj distribuciji.  
 Kako bismo dobili bolje rezultate na naše podatke možemo primijeniti neku od transformacija.
 
 ```{r}
@@ -549,31 +553,38 @@ summary(regression_log)
 ```
 
 Usporedbom rezultata uočavamo da je sqrt transformacija prikladnija u ovoj situaciji, također primijećujemo da smo dobili bolju signifikantnost varijable.  
-Općenito sqrt transformacija je pogodna pri manjim zakrivljenostima dok log daje bolje rezultate ako je zakrivljenost izraženija.  
 Vizualizirajmo dobivenu regresiju.
 
 ```{r fig.cap = "Prikaz linearne regresije (Homicide)", out.width='0.9\\linewidth'}
 plot(
   sqrt(unemployment),
   homicide,
-  pch = 19,
+  pch = 16,
   cex = 1.3,
   col = "cornflowerblue",
   xlab = "Unemployment percentage",
-  ylab = "Homicide crimes per 100 000",
+  ylab = "Homicide crimes per 100 000"
 )
 abline(regression_sqrt, col = "lightgreen", lwd = 2)
 ```
-Sljedeća varijabla po razini korelacije Below poverty level.
+Sljedeća varijabla po razini korelacije Below poverty level. \
+Ako promotrimo ovisnot stope ubojstava sa stopom siromaštva uočavamo dosta jasnu poveznicu.
+
+```{r homicide_gdp, fig.cap = "Odnos stope ubojstava i stope siromaštva", out.width='0.9\\linewidth'}
+homicide_gdp <-
+  data.frame(x = chicago_pc$Below.Poverty.Level,
+             y = chicago_pc$Assault..Homicide.)
+plot(homicide_gdp,
+     main = "Homicide rate in relation to GDP per capita",
+     xlab = "Below poverty level",
+     ylab = "Homicide rate (n/100 000)",
+     col = "cornflowerblue",
+     pch = 16)
+```
+Pokušajmo sada dodati varijablu u regresijski model.
 
 ```{r}
 below_poverty <- as.matrix(chicago_pc[5])
-cat("Mean: ", mean(below_poverty), "\n")
-cat("Median: ", median(below_poverty), "\n")
-```
-Kao i kod prijašnje varijable primijećujemo pozitivnu zakrivljenost.
-
-```{r}
 regression_2 <-
   lm(homicide ~ sqrt(unemployment) + below_poverty, chicago_pc)
 regression_2_sqrt <-
@@ -585,7 +596,7 @@ summary(regression_2)
 summary(regression_2_sqrt)
 summary(regression_2_log)
 ```
-Usporedbom 3 mogućnosti kombiniranja varijabli, primijećujemo da zadnja opcija (kombinacija sqrt i log transformaciej) daje najbolje rezultate.  
+Usporedbom 3 mogućnosti kombiniranja varijabli, primijećujemo da zadnja opcija (kombinacija sqrt i log transformacije) daje najbolje rezultate.  
 Pokušajmo sada dodati i treću varijablu po koreliranosti, Dependency.
 
 ```{r}
@@ -614,7 +625,7 @@ summary(regression_4)
 ```
 
 ```{r fig.cap = "Prikaz standardiziranih reziduala", out.width='0.9\\linewidth'}
-plot(regression_4, 3)
+plot(regression_4, 3, col="cornflowerblue", pch=16)
 ```
 Breusch-Paganovim testom možemo provjeriti homoskedastičnost reziduala.
 
@@ -635,7 +646,7 @@ summary(regression_4_sqrt)
 ```
 Promotrimo sada graf sa standardiziranim rezidualima:
 ```{r fig.cap = "Prikaz standardiziranih reziduala", out.width='0.9\\linewidth'}
-plot(regression_4_sqrt, 3)
+plot(regression_4_sqrt, 3, col = "cornflowerblue", pch =16)
 ```
 Vidimo da se pravac znatno izravnao u usporedbi s modelom. \
 Pokažimo to i testom.
@@ -653,7 +664,7 @@ Test nam potvrđuje da nema koreliranosti između reziduala što je poželjan is
 Promotrimo sada QQ plot. Vidimo da reziduali poprilično dobro slijede pravac što bi sugeriralo njihovu normalnost.
 
 ```{r fig.cap = "Q-Q Plot", out.width='0.9\\linewidth'}
-plot(regression_4_sqrt, 2)
+plot(regression_4_sqrt, 2, col = "cornflowerblue", pch=16)
 ```
 Prethodnu pretpostavku možemo provjeriti Kolmogorov-Smirnovljevim testom.
 
@@ -670,8 +681,12 @@ Vidimo da Lillieforseov test ne prolazi, to se događa jer je on nešto stroži 
 Promotrimo li histogram reziduala vidimo da oni donekle oponašaju izgled normalne razdiobe.
 ```{r fig.cap = "Histogram reziduala", out.width='0.9\\linewidth'}
 hist((regression_4_sqrt$residuals),
-     col = 'light blue')
+     col = 'cornflowerblue')
 ```
 
 ## Zaključak
+
+Možemo zaključiti da na stopu ubojstava najviše utječu nezaposlenost i stopa ljudi koji žive ispod razine siromaštva, također znatan utjecaj pokazuju manjak više edukacije i radna sposobnost. \
+Rezultati su očekivani i stvaraju jasnu poveznicu između negativnih karakteristika kvarta i stopom ubojstava.
+
 
