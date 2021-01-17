@@ -1,5 +1,5 @@
 ---
-title: '**Analiza kriminala i socio-ekonomskih faktora**'
+title: "**Analiza kriminala i socio-ekonomskih faktora**"
 author:
 - Jan Grgić
 - Bernard Spiegl
@@ -7,9 +7,9 @@ author:
 - Dunja Šmigovec
 output:
   pdf_document: default
-  html_document:
-    df_print: paged
-header-includes: \usepackage{float} \floatplacement{figure}{H}
+header-includes:
+  \usepackage{float}
+  \floatplacement{figure}{H}
 ---
 
 ```{r setup, include=FALSE}
@@ -447,6 +447,8 @@ Zadnje što provjeravamo je nezavisnost pomoću Durbin-Watsonovog testa.
 dwtest(reg)
 ```
 Vidimo da reziduali nisu autokorelirani što znači da su nezavisni.
+
+Na kraju zaključujemo da na kriminal koji uključuje vatreno oružje utječe nezaposlenost, manjak više edukacije i GDP doprinos kvarta. Rezultati koji smo dobili nisu ništa neobičajni već konzistentni s onime što bi povezali s kriminalom. Loše socio-ekonomske prilike stvaraju atmosferu za kriminal.
 
 ### Kategorija Assault Homicide
 
