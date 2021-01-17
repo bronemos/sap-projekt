@@ -165,6 +165,72 @@ res
 ```
 S obzirom da je p-value < 2.2e-16 izrazito manja od alpha = 0.05, odbacujemo H0 u korist H1 te bismo mogli zaključiti da ova distribucija nije uniformna, odnosno da broj kriminalnih djela nije isti u svakom dobu dana. Naravno, treba pripaziti i na veličinu podataka. S obzirom na velik broj podataka, može se dogoditi da se odbaci H0 u korist H1 kad to nije trebalo napraviti, ali s obzirom na izgled dijagrama, slažemo se s odbacivanjem H0 u korist H1.
 
+## Podaci o učestalosti kriminala ovisno o mjesecu u godini
+
+Razmišljajući o prethodnom problemu, zaključujemo da bi bilo zanimljivo proučiti i ovisnost učestalosti kriminala o mjesecu u godini. U sljedećem dijelu, provjerit ćemo radi li se u ovom slučaju o uniformnoj razdiobi.
+Izdvojimo za početak broj kriminala vezan uz svaki mjesec.
+
+```{r}
+#dohvaća listu mjeseci
+months <-
+  as.numeric(format(
+    strptime(
+      chicago_year$DATE..OF.OCCURRENCE,
+      format = "%m/%d/%Y %I:%M:%S %p",
+      tz = "America/Chicago"
+    ),
+    format = "%m"
+  ))
+table(months)
+```
+Podaci izgledaju kao da dolaze iz uniformne razdiobe, prikažimo ih histogramom bolje vizualizacije radi.
+
+```{r criminal_action_per_month, fig.cap = "Frekventnost kriminalnih radnji svaki mjesec u godini", out.width='0.9\\linewidth'}
+hist(
+  months,
+  breaks = 0:12,
+  main = "Frequency of criminal activities every month in a year",
+  xlab = "Month",
+  ylab = "Frequency",
+  col = "light blue",
+  xaxt = "n"
+)
+axis(side = 1,
+     at = seq(0.5, 12, 1),
+     labels = c(1:12)
+     )
+```
+Iz histograma distribucija izgleda donekle uniformno. Vidimo ponešto manje brojke u ožujku i travnju. Opat ćemo iskoristiti HI kvadrat test da provjerimo uniformnost ove distribucije.
+Testirajmo hipotezu H0 jesu li kriminalna djela jednako distribuirana po svim mjesecima, uz hipotezu H1 da nisu jednako distribuirana uz razinu značajnosti alpha = 0.05.
+
+```{r chi squared test}
+res<-chisq.test(as.integer(table(months)), p = c(rep(1/12, each=12)))
+res
+```
+U ovom slučaju dobivamo nešto više od 3 puta manju vrijednost X-squared uz 11 stupnjeva slobode. p-value je poprilično mala te bismo mogli odbaciti H0 u korist H1. S obzirom da 3. i 4. mjesec odstupaju zbog pandemije koronavirusa, pokušajmo ih izbaciti iz podataka, te ponoviti test.
+
+```{r}
+months_filtered<-ifelse(months==1,rr2<-1,
+                     ifelse(months==2,rr2<-2,
+                            ifelse(months==5,rr2<-5,
+                                   ifelse(months==6,rr2<-6,
+                                          ifelse(months==7,rr2<-7,
+                                                 ifelse(months==8,rr2<-8,
+                                                        ifelse(months==9,rr2<-9,
+                                                               ifelse(months==10,rr2<-10,
+                                                                      ifelse(months==11,rr2<-11,
+                                                                             ifelse(months==12,rr2<-12,
+                            rr2<-NA))))))))))
+table_months <- table(months_filtered)
+table_months
+```
+```{r chi squared test}
+res<-chisq.test(as.integer(table_months), p = c(rep(1/10, each=10)))
+res
+```
+X-squared je sad pao za još 4 puta u odnosu na prošli test. Iako je p vrijednost i dalje mala, odučili smo ne odbaciti H0 zbog velikog skupa podataka. Smatramo da je distribucija po mjesecima uniformna te da je u 2020. godini bilo drugačije zbog lockdowna u ožujku i travnju, ali ostali mjeseci imaju približno uniformnu distribuciju.
+
+
 ## Učestalost krađa i kriminala vezanih uz narkotike
 
 Dijagram (Figure \ref{fig:category_frequencies}) prikazuje učestalost različitih kategorija zločina unazad godinu dana. Najveću učestalost prema grafu ima kategorija krađe "THEFT", dok je kategorija "NARCOTICS" tek na 9. mjestu. Uz kategoriju krađe osim "THEFT" dodali smo "BURGLARY" i "ROBBERY" jer im je cilj krađa. Možemo reći da su specijalizacija krađe. HI kvadrat testom o jednoj proporciji provjeravamo je li razlika učestalosti krađa i kriminala vezanih uz narkotike statistički signifikantna, odnosno je li učestalost krađa doista veća od učestalosti kriminala vezanih za narkotike. Pretpostavit ćemo da se radi o normalnoj distribuciji.
