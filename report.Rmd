@@ -284,7 +284,7 @@ main = "Theft value"
 )
 ```
 
-Testiramo hipotezu H0: udio krađa iznad \$500 je 0.5, nasuprot alternativi H1: udio krađa iznad \$500 je veći od 0.5. Za razinu značajnosti alpha uzeli smo 0.05.
+Testiramo hipotezu H0: udio krađa iznad \$500 je 0.5, nasuprot alternativi H1: udio krađa iznad \$500 je manji od 0.5. Za razinu značajnosti alpha uzeli smo 0.05.
 
 
 ```{r theft_value2, warning=FALSE, fig.cap = "Učestalost krađa", out.width='0.9\\linewidth'}
