@@ -739,6 +739,6 @@ hist((regression_4_sqrt$residuals),
 ## Zaključak
 
 Možemo zaključiti da na stopu ubojstava najviše utječu nezaposlenost i stopa ljudi koji žive ispod razine siromaštva, također znatan utjecaj pokazuju manjak više edukacije i radna sposobnost. \
-Rezultati su očekivani i stvaraju jasnu poveznicu između negativnih karakteristika kvarta i stopom ubojstava.
+Rezultati su očekivani i stvaraju jasnu poveznicu između negativnih karakteristika kvarta i stope ubojstava.
 
 
